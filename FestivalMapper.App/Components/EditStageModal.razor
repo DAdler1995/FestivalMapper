@@ -24,10 +24,10 @@
                     </div>
                 </div>
 
-                <div class="modal-footer">
+@*                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
                     <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
-                </div>
+                </div> *@
 
 
                 <hr />
@@ -93,9 +93,9 @@
     [Parameter] public Stage Stage { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
-    [Parameter] public Func<int, bool>? IsArtistConflicting { get; set; } = _ => false;
+    [Parameter] public Func<string, bool>? IsArtistConflicting { get; set; } = _ => false;
     [Parameter] public EventCallback OnArtistChange { get; set; }
-    [Parameter] public Func<int, string?>? GetConflictMessage { get; set; }
+    [Parameter] public Func<string, string?>? GetConflictMessage { get; set; }
 
     private Artist NewArtist = new();
     private DateTime NewArtistStartTimeLocal = DateTime.Now;
@@ -109,7 +109,6 @@
 
         var artist = new Artist
         {
-            Id = Stage.Artists.Any() ? Stage.Artists.Max(a => a.Id) + 1 : 1,
             Name = NewArtist.Name,
             Description = NewArtist.Description,
             SetTimeStart = NewArtistStartTimeLocal.ToUniversalTime(),
@@ -125,7 +124,7 @@
         await OnArtistChange.InvokeAsync(null);
     }
 
-    private async Task RemoveArtist(int id)
+    private async Task RemoveArtist(string id)
     {
         var artist = Stage.Artists.FirstOrDefault(a => a.Id == id);
         if (artist != null)

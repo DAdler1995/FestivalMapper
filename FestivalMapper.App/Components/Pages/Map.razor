@@ -46,7 +46,7 @@
 
 				@foreach (var stage in FestivalMap.Stages)
 				{
-					<div class="stage" style="top: @(stage.StageLocation.Y * MapImageHeight)px; left: @(stage.StageLocation.X * MapImageWidth)px;">
+					<div class="stage" style="top: @(stage.StageLocation.Y * MapImageHeight)px; left: @(stage.StageLocation.X * MapImageWidth)px; background-color: @stage.StageBg; border: 1px solid @stage.StageColor;">
 						<p style="display: flex; justify-content: center; gap: 4px; color: #ffffff; text-align: center;">@stage.StageName</p>
 						@if(IsEditMode)
 						{
@@ -91,7 +91,7 @@
 		width: @($"{stageMarkerRadius * 2}px"); 
 		height: @($"{stageMarkerRadius * 2}px"); 
 		border: 1px solid #ff0000; 
-		background-color: #ff000040;
+		background-color: #ff0000aa;
 		border-radius: 50%; 
 		transform: translate(-50%, -50%); 
 		pointer-events: none;
@@ -116,7 +116,7 @@
 		Stages = new List<Stage>()
 	};
 
-	private Dictionary<int, List<(string ArtistName, string StageName)>> ConflictDetails = new();
+	private Dictionary<string, List<(string ArtistName, string StageId)>> ConflictDetails = new();
 
 	private ElementReference MapImageRef;
 	private ElementReference MapContainerRef;
@@ -132,22 +132,36 @@
 
 	private int stageMarkerRadius = 25;
 
-	private bool IsArtistConflicting(int artistId)
+	private string RandomStageColor()
+	{
+		var random = new Random();
+		var color = $"#{random.Next(0x1000000):X6}";
+
+		return color;
+	}
+
+	private bool IsArtistConflicting(string artistId)
 	{
 		return ConflictDetails.ContainsKey(artistId);
 	}
 
-	private string? GetConflictMessage(int artistId)
-{
-    if (!ConflictDetails.TryGetValue(artistId, out var conflicts) || conflicts.Count == 0)
-        return null;
+	private string GetStageName(string stageId)
+	{
+		return FestivalMap.Stages.FirstOrDefault(x => x.Id == stageId).StageName;
+	}
 
-    var messages = conflicts
-        .Select(c => $"Conflict with {c.ArtistName} at {c.StageName}")
-        .ToList();
+	private string? GetConflictMessage(string artistId)
+	{
+		if (!ConflictDetails.TryGetValue(artistId, out var conflicts) || conflicts.Count == 0)
+			return null;
 
-    return string.Join("; ", messages);
-}
+
+		var messages = conflicts
+			.Select(c => $"Conflict with {c.ArtistName} at {GetStageName(c.StageId)}")
+			.ToList();
+
+		return string.Join("; ", messages);
+	}
 
 	private void DetectScheduleConflicts()
 	{
@@ -170,6 +184,12 @@
 				var a1 = allArtists[i];
 				var a2 = allArtists[j];
 
+				// skip same artist
+				if (a1.Artist.Id == a2.Artist.Id)
+				{
+					continue;
+				}
+
 				var a1StartsBeforeA2End = a1.Start < a2.End;
 				var a2StartsBeforeA1End = a2.Start < a1.End;
 
@@ -181,14 +201,14 @@
 					{
 						ConflictDetails[a1.Artist.Id] = new();
 					}
-					
+
 					if (!ConflictDetails.ContainsKey(a2.Artist.Id))
 					{
 						ConflictDetails[a2.Artist.Id] = new();
 					}
-					
-					ConflictDetails[a1.Artist.Id].Add((a2.Artist.Name, a2.StageName));
-					ConflictDetails[a2.Artist.Id].Add((a1.Artist.Name, a1.StageName));
+
+					ConflictDetails[a1.Artist.Id].Add((a2.Artist.Name, a2.StageId));
+					ConflictDetails[a2.Artist.Id].Add((a1.Artist.Name, a1.StageId));
 				}
 			}
 		}
@@ -206,6 +226,7 @@
 	{
 		IsEditModalVisible = false;
 		SelectedStage = null;
+		StateHasChanged();
 		return Task.CompletedTask;
 	}
 
@@ -222,7 +243,7 @@
 		IsEditMode = !IsEditMode;
 	}
 
-	private void RemoveStage(int id)
+	private void RemoveStage(string id)
 	{
 		var stage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
 		if (stage != null)
@@ -246,7 +267,7 @@
 
 	}
 
-	private void EditStage(int id)
+	private void EditStage(string id)
 	{
 		SelectedStage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
 		if (SelectedStage != null)
@@ -296,13 +317,16 @@
 
 	private void AddStage(double x, double y)
 	{
-		FestivalMap.Stages.Add(new Stage
-        {
-            Id = stageIdCounter++,
-            StageName = $"Stage {stageIdCounter - 1}",
-            StageLocation = new Point(x, y),
-            Artists = new List<Artist>()
-        });
+		var newStage = new Stage
+			{
+				StageName = $"Stage {stageIdCounter - 1}",
+				StageLocation = new Point(x, y),
+				Artists = new List<Artist>(),
+				StageColor = RandomStageColor()
+			};
+
+		FestivalMap.Stages.Add(newStage);
+		stageIdCounter++;
 	}
 
 
