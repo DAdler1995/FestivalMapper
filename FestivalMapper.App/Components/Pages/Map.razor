@@ -91,7 +91,7 @@
 		width: @($"{stageMarkerRadius * 2}px"); 
 		height: @($"{stageMarkerRadius * 2}px"); 
 		border: 1px solid #ff0000; 
-		background-color: #ff0000aa;
+		background-color: ##ff0000aa;
 		border-radius: 50%; 
 		transform: translate(-50%, -50%); 
 		pointer-events: none;
@@ -203,6 +203,7 @@
 		var clickX = e.OffsetX;
 		var clickY = e.OffsetY;
 
+		// check if existing stage has been clicked
 		foreach (var stage in FestivalMap.Stages)
 		{
 			var stageX = stage.StageLocation.X * MapImageWidth;
@@ -215,20 +216,26 @@
 
 			if (distance <= (stageMarkerRadius + clickBuffer))
 			{
+				EditStage(stage.Id);
 				return;
 			}
 		}
-		
+
 
 		// Convert to relative coordinates
 		var relativeX = e.OffsetX / MapImageWidth;
 		var relativeY = e.OffsetY / MapImageHeight;
 
-        FestivalMap.Stages.Add(new Stage
+		AddStage(relativeX, relativeY);
+	}
+
+	private void AddStage(double x, double y)
+	{
+		FestivalMap.Stages.Add(new Stage
         {
             Id = stageIdCounter++,
             StageName = $"Stage {stageIdCounter - 1}",
-            StageLocation = new Point(relativeX, relativeY),
+            StageLocation = new Point(x, y),
             Artists = new List<Artist>()
         });
 	}
