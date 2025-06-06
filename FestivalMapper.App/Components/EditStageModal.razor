@@ -1,0 +1,138 @@
+﻿
+@using FestivalMapper.App.Models
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Stage</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="stageName" class="form-label">Stage Name</label>
+                        <input id="stageName" type="text" class="form-control" @bind="Stage.StageName" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="stageDesc" class="form-label">Description</label>
+                        <textarea id="stageDesc" class="form-control" rows="3" @bind="Stage.StageDescription"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
+                </div>
+
+
+                <hr />
+
+                <div class="modal-body">
+                    <h6>Artists</h6>
+                    @foreach (var artist in Stage.Artists)
+                    {
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@artist.Name</strong><br />
+                                    <small>
+                                        @artist.SetTimeStart.ToLocalTime().ToString("t") –
+                                        @(artist.SetDurationMinutes.HasValue ? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "End time not set")
+                                    </small>
+                                    @if (!string.IsNullOrWhiteSpace(artist.Description))
+                                    {
+                                        <p class="mt-2 mb-0">@artist.Description</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+                </div>
+
+                <hr />
+
+                <div class="modal-body">
+                    <h6>Add Artist</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input class="form-control" placeholder="Name" @bind="NewArtist.Name" />
+                        </div>
+                        <div class="col-6">
+                            <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="NewArtistStartTimeLocal" />
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input class="form-control" placeholder="Description" @bind="NewArtist.Description" />
+                    </div>
+                    <div class="mt-2 row g-2">
+                        <div class="col-6">
+                            <input class="form-control" placeholder="Duration (min)" type="number" @bind="NewArtist.SetDurationMinutes" />
+                        </div>
+                        <div class="col-6 d-flex align-items-end justify-content-end">
+                            <button class="btn btn-sm btn-primary" @onclick="AddArtist">Add Artist</button>
+                        </div>
+                    </div>
+                </div>               
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public Stage Stage { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private Artist NewArtist = new();
+    private DateTime NewArtistStartTimeLocal = DateTime.Now;
+
+    private void AddArtist()
+    {
+        if (string.IsNullOrWhiteSpace(NewArtist.Name))
+        {
+            return;
+        }
+
+        var artist = new Artist
+        {
+            Id = Stage.Artists.Any() ? Stage.Artists.Max(a => a.Id) + 1 : 1,
+            Name = NewArtist.Name,
+            Description = NewArtist.Description,
+            SetTimeStart = NewArtistStartTimeLocal.ToUniversalTime(),
+            SetDurationMinutes = NewArtist.SetDurationMinutes
+        };
+
+        Stage.Artists.Add(artist);
+
+        NewArtist = new();
+        NewArtistStartTimeLocal = DateTime.Now;
+    }
+
+    private void RemoveArtist(int id)
+    {
+        var artist = Stage.Artists.FirstOrDefault(a => a.Id == id);
+        if (artist != null)
+        {
+            Stage.Artists.Remove(artist);
+        }
+    }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync(null);
+    }
+
+    private async Task Save()
+    {
+        await OnSave.InvokeAsync(null);
+    }
+}

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FestivalMapper.App.Services;
+using Microsoft.Extensions.Logging;
 
 namespace FestivalMapper.App
 {
@@ -15,6 +16,9 @@ namespace FestivalMapper.App
                 });
 
             builder.Services.AddMauiBlazorWebView();
+
+            // my services
+            builder.Services.AddSingleton<ImagePickerService>();
 
 #if DEBUG
     		builder.Services.AddBlazorWebViewDeveloperTools();
