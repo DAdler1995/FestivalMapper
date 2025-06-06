@@ -20,8 +20,6 @@
 <div class="container-fluid">
 	@if (!string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
 	{
-
-
 		<div class="row">
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Name</span>
@@ -49,7 +47,7 @@
 				@foreach (var stage in FestivalMap.Stages)
 				{
 					<div class="stage" style="top: @(stage.StageLocation.Y * MapImageHeight)px; left: @(stage.StageLocation.X * MapImageWidth)px;">
-						<p style="display: flex; justify-content: center; gap: 4px; color: #ffffff;">@stage.StageName</p>
+						<p style="display: flex; justify-content: center; gap: 4px; color: #ffffff; text-align: center;">@stage.StageName</p>
 						@if(IsEditMode)
 						{
 						<div class="edit-stage">
