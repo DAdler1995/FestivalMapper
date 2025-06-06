@@ -91,7 +91,7 @@
 		width: @($"{stageMarkerRadius * 2}px"); 
 		height: @($"{stageMarkerRadius * 2}px"); 
 		border: 1px solid #ff0000; 
-		background-color: ##ff0000aa;
+		background-color: #ff000040;
 		border-radius: 50%; 
 		transform: translate(-50%, -50%); 
 		pointer-events: none;
@@ -106,7 +106,7 @@
 	}
 </style>
 
-<EditStageModal IsVisible="@IsEditModalVisible" Stage="@SelectedStage" OnClose="@CloseEditModal" OnSave="@SaveStageChanges" />
+<EditStageModal IsVisible="@IsEditModalVisible" Stage="@SelectedStage" OnClose="@CloseEditModal" OnSave="@SaveStageChanges" IsArtistConflicting="@IsArtistConflicting" OnArtistChange="@DetectScheduleConflicts" GetConflictMessage="GetConflictMessage" />
 
 
 @code {
@@ -115,6 +115,8 @@
 	{
 		Stages = new List<Stage>()
 	};
+
+	private Dictionary<int, List<(string ArtistName, string StageName)>> ConflictDetails = new();
 
 	private ElementReference MapImageRef;
 	private ElementReference MapContainerRef;
@@ -129,6 +131,69 @@
 	private Stage? SelectedStage;
 
 	private int stageMarkerRadius = 25;
+
+	private bool IsArtistConflicting(int artistId)
+	{
+		return ConflictDetails.ContainsKey(artistId);
+	}
+
+	private string? GetConflictMessage(int artistId)
+{
+    if (!ConflictDetails.TryGetValue(artistId, out var conflicts) || conflicts.Count == 0)
+        return null;
+
+    var messages = conflicts
+        .Select(c => $"Conflict with {c.ArtistName} at {c.StageName}")
+        .ToList();
+
+    return string.Join("; ", messages);
+}
+
+	private void DetectScheduleConflicts()
+	{
+		// reset conflicts
+		ConflictDetails.Clear();
+
+		var allArtists = FestivalMap.Stages.SelectMany(s => s.Artists.Where(a => a.SetTimeEnd.HasValue).Select(a => new
+		{
+			StageId = s.Id,
+			StageName = s.StageName,
+			Artist = a,
+			Start = a.SetTimeStart,
+			End = a.SetTimeEnd
+		})).ToList();
+
+		for (int i = 0; i < allArtists.Count; i++)
+		{
+			for (int j = i + 1; j < allArtists.Count; j++)
+			{
+				var a1 = allArtists[i];
+				var a2 = allArtists[j];
+
+				var a1StartsBeforeA2End = a1.Start < a2.End;
+				var a2StartsBeforeA1End = a2.Start < a1.End;
+
+				bool overlaps = a1StartsBeforeA2End && a2StartsBeforeA1End;
+
+				if (overlaps)
+				{
+					if (!ConflictDetails.ContainsKey(a1.Artist.Id))
+					{
+						ConflictDetails[a1.Artist.Id] = new();
+					}
+					
+					if (!ConflictDetails.ContainsKey(a2.Artist.Id))
+					{
+						ConflictDetails[a2.Artist.Id] = new();
+					}
+					
+					ConflictDetails[a1.Artist.Id].Add((a2.Artist.Name, a2.StageName));
+					ConflictDetails[a2.Artist.Id].Add((a1.Artist.Name, a1.StageName));
+				}
+			}
+		}
+	}
+
 
 	private async Task GetMapImageSize()
 	{

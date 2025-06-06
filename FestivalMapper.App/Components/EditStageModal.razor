@@ -34,13 +34,14 @@
 
                 <div class="modal-body">
                     <h6>Artists</h6>
-                    @foreach (var artist in Stage.Artists)
+                    @foreach (var artist in Stage.Artists.OrderBy(a => a.SetTimeStart))
                     {
                         
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>@artist.Name</strong><br />
+                                    <strong title="@(GetConflictMessage.Invoke(artist.Id) ?? "")" class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
+                                    <br />
                                     <small>
                                         @artist.SetTimeStart.ToLocalTime().ToString("t") –
                                         @(artist.SetDurationMinutes.HasValue ? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "NO END TIME")
@@ -92,11 +93,14 @@
     [Parameter] public Stage Stage { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public Func<int, bool>? IsArtistConflicting { get; set; } = _ => false;
+    [Parameter] public EventCallback OnArtistChange { get; set; }
+    [Parameter] public Func<int, string?>? GetConflictMessage { get; set; }
 
     private Artist NewArtist = new();
     private DateTime NewArtistStartTimeLocal = DateTime.Now;
 
-    private void AddArtist()
+    private async Task AddArtist()
     {
         if (string.IsNullOrWhiteSpace(NewArtist.Name))
         {
@@ -109,6 +113,7 @@
             Name = NewArtist.Name,
             Description = NewArtist.Description,
             SetTimeStart = NewArtistStartTimeLocal.ToUniversalTime(),
+            SetTimeEnd = NewArtist.SetDurationMinutes.HasValue ? NewArtistStartTimeLocal.AddMinutes(NewArtist.SetDurationMinutes.Value).ToUniversalTime() : null,
             SetDurationMinutes = NewArtist.SetDurationMinutes
         };
 
@@ -116,15 +121,19 @@
 
         NewArtist = new();
         NewArtistStartTimeLocal = DateTime.Now;
+
+        await OnArtistChange.InvokeAsync(null);
     }
 
-    private void RemoveArtist(int id)
+    private async Task RemoveArtist(int id)
     {
         var artist = Stage.Artists.FirstOrDefault(a => a.Id == id);
         if (artist != null)
         {
             Stage.Artists.Remove(artist);
         }
+
+        await OnArtistChange.InvokeAsync(null);
     }
 
     private async Task Close()
