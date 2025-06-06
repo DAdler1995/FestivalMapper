@@ -44,3 +44,9 @@ A cross-platform .NET 8 MAUI Blazor app for planning and managing music festival
    ```bash
    git clone https://github.com/DAdler1995/FestivalMapper.git
    cd festival-map-planner
+
+---
+
+## License
+
+[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
