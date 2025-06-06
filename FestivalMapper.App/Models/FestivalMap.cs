@@ -17,16 +17,22 @@ namespace FestivalMapper.App.Models
 
     public class Stage
     {
-        public int Id { get; set; }
+        public string Id { get; } = Guid.NewGuid().ToString();
         public string StageName { get; set; }
         public Point StageLocation { get; set; }
         public string StageDescription { get; set; }
+        public string StageColor { get; set; }
+        public string StageBg { get
+            {
+                return $"{StageColor}aa";
+            } 
+        }
         public List<Artist> Artists { get; set; } = new List<Artist>();
     }
 
     public class Artist
     {
-        public int Id { get; set; }
+        public string Id { get; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime SetTimeStart { get; set; }
