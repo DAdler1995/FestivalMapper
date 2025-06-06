@@ -43,8 +43,9 @@
                                     <strong>@artist.Name</strong><br />
                                     <small>
                                         @artist.SetTimeStart.ToLocalTime().ToString("t") –
-                                        @(artist.SetDurationMinutes.HasValue ? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "End time not set")
-                                    </small>
+                                        @(artist.SetDurationMinutes.HasValue ? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "NO END TIME")
+                                    </small>                                    
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveArtist(artist.Id)">🗑️</button>
                                     @if (!string.IsNullOrWhiteSpace(artist.Description))
                                     {
                                         <p class="mt-2 mb-0">@artist.Description</p>
