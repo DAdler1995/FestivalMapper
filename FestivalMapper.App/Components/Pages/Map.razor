@@ -43,16 +43,16 @@
 			<label for="FestivalMap">Festival Map</label>
 			<div class="map-container" @ref="MapContainerRef" @onclick="OnMapClick">
 				
-				<img class="map" src="data:image/png;base64,@FestivalMap.FestivalMapBase64" @ref="MapImageRef" />
+				<img class="map" src="data:image/png;base64,@FestivalMap.FestivalMapBase64" @ref="MapImageRef" @onload="GetMapImageSize" />
 
 
 				@foreach (var stage in FestivalMap.Stages)
 				{
 					<div class="stage" style="top: @(stage.StageLocation.Y * MapImageHeight)px; left: @(stage.StageLocation.X * MapImageWidth)px;">
-						<p style="display: flex; justify-content: center; gap: 4px;">@stage.Id</p>
+						<p style="display: flex; justify-content: center; gap: 4px; color: #ffffff;">@stage.StageName</p>
 						@if(IsEditMode)
 						{
-						<div style="margin-top: 1px; display: flex; justify-content: center; gap: 4px;">
+						<div class="edit-stage">
 							<button style="font-size: 10px;" @onclick="() => EditStage(stage.Id)">✏️</button>
 							<button style="font-size: 10px;" @onclick="() => RemoveStage(stage.Id)">🗑️</button>
 						</div>
@@ -90,12 +90,20 @@
 
 	.stage {
 		position: absolute;
-		width: 50px; 
-		height: 50px; 
+		width: @($"{stageMarkerRadius * 2}px"); 
+		height: @($"{stageMarkerRadius * 2}px"); 
 		border: 1px solid #ff0000; 
 		background-color: #ff0000aa;
 		border-radius: 50%; 
 		transform: translate(-50%, -50%); 
+		pointer-events: none;
+	}
+
+	.edit-stage {
+		margin-top: 1px; 
+		display: flex; 
+		justify-content: center; 
+		gap: 4px; 
 		pointer-events: auto;
 	}
 </style>
@@ -121,6 +129,15 @@
 	private bool IsEditMode = false;
 	private bool IsEditModalVisible = false;
 	private Stage? SelectedStage;
+
+	private int stageMarkerRadius = 25;
+
+	private async Task GetMapImageSize()
+	{
+		var size = await JS.InvokeAsync<DomRect>("getImageSize", MapImageRef);
+		MapImageWidth = size.Width;
+		MapImageHeight = size.Height;
+	}
 
 	private Task CloseEditModal()
 	{
@@ -150,18 +167,24 @@
 			FestivalMap.Stages.Remove(stage);
 		}
 
-		// if there are no stage automatically exit edit mode
+		// delay exiting edit mode to prevent map click trigger
 		if (!FestivalMap.Stages.Any())
 		{
-			IsEditMode = false;
+			_ = Task.Run(async () =>
+			{
+				await Task.Delay(100);
+				await InvokeAsync(() =>
+				{
+					IsEditMode = false;
+					StateHasChanged();
+				});
+			});			
 		}
 
 	}
 
 	private void EditStage(int id)
 	{
-		return;
-
 		SelectedStage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
 		if (SelectedStage != null)
 		{
@@ -171,26 +194,43 @@
 
 	private async Task OnMapClick(MouseEventArgs e)
 	{
-		// don't add stage markers when in edit mode
-		if (IsEditMode)
+		// don't add stage markers when in edit mode or there is no map size
+		if (IsEditMode || MapImageHeight == 0 || MapImageWidth == 0)
 		{
 			return;
 		}
 
-		// image dimmensions
-        var size = await JS.InvokeAsync<DomRect>("getImageSize", MapImageRef);
-        MapImageWidth = size.Width;
-        MapImageHeight = size.Height;
+		var clickBuffer = 10;
 
-        // Convert to relative coordinates
-        var x = e.OffsetX / MapImageWidth;
-        var y = e.OffsetY / MapImageHeight;
+		var clickX = e.OffsetX;
+		var clickY = e.OffsetY;
+
+		foreach (var stage in FestivalMap.Stages)
+		{
+			var stageX = stage.StageLocation.X * MapImageWidth;
+			var stageY = stage.StageLocation.Y * MapImageHeight;
+
+			var dx = clickX - stageX;
+			var dy = clickY - stageY;
+
+			var distance = Math.Sqrt(dx * dx + dy * dy);
+
+			if (distance <= (stageMarkerRadius + clickBuffer))
+			{
+				return;
+			}
+		}
+		
+
+		// Convert to relative coordinates
+		var relativeX = e.OffsetX / MapImageWidth;
+		var relativeY = e.OffsetY / MapImageHeight;
 
         FestivalMap.Stages.Add(new Stage
         {
             Id = stageIdCounter++,
             StageName = $"Stage {stageIdCounter - 1}",
-            StageLocation = new Point(x, y),
+            StageLocation = new Point(relativeX, relativeY),
             Artists = new List<Artist>()
         });
 	}
