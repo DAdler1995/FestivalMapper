@@ -150,6 +150,12 @@
 			FestivalMap.Stages.Remove(stage);
 		}
 
+		// if there are no stage automatically exit edit mode
+		if (!FestivalMap.Stages.Any())
+		{
+			IsEditMode = false;
+		}
+
 	}
 
 	private void EditStage(int id)
