@@ -75,7 +75,7 @@
                     </div>
                     <div class="mt-2 row g-2">
                         <div class="col-6">
-                            <input class="form-control" placeholder="Duration (min)" type="number" @bind="NewArtist.SetDurationMinutes" />
+                            <input class="form-control" placeholder="Duration (min)" type="number" min="0" @bind="NewArtist.SetDurationMinutes" />
                         </div>
                         <div class="col-6 d-flex align-items-end justify-content-end">
                             <button class="btn btn-sm btn-primary" @onclick="AddArtist">Add Artist</button>
@@ -105,6 +105,11 @@
         if (string.IsNullOrWhiteSpace(NewArtist.Name))
         {
             return;
+        }
+
+        if (NewArtist.SetDurationMinutes == 0)
+        {
+            NewArtist.SetDurationMinutes = null;
         }
 
         var artist = new Artist
