@@ -1,0 +1,52 @@
+﻿
+@using FestivalMapper.App.Models
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Stage</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="stageName" class="form-label">Stage Name</label>
+                        <input id="stageName" type="text" class="form-control" @bind="Stage.StageName" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="stageDesc" class="form-label">Description</label>
+                        <textarea id="stageDesc" class="form-control" rows="3" @bind="Stage.StageDescription"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public Stage Stage { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync(null);
+    }
+
+    private async Task Save()
+    {
+        await OnSave.InvokeAsync(null);
+    }
+}

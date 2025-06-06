@@ -1,0 +1,203 @@
+﻿@using System 
+@using System.IO
+@using FestivalMapper.App.Services
+@using FestivalMapper.App.Models
+
+@inject ImagePickerService ImagePickerService
+
+@page "/map"
+
+<PageTitle>Festival Map</PageTitle>
+
+<div class="container mb-3">
+	<div class="row">
+		<div class="col-md-4">
+			<button class="btn btn-primary" @onclick="PickImage">Pick Image</button>
+		</div>
+	</div>
+</div>
+
+<div class="container-fluid">
+	@if (!string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
+	{
+
+
+		<div class="row">
+			<div class="input-group mb-3">
+				<span class="input-group-text">Festival Name</span>
+				<input id="FestivalTitle" type="text" class="form-control" aria-label="Festival Name" />
+			</div>
+
+			<div class="input-group mb-3">
+				<span class="input-group-text">Description</span>
+				<textarea id="FestivalDesc" class="form-control" rows="3" aria-label="Festival Description" />
+			</div>
+
+			<button class="btn btn-secondary" @onclick="ToggleEditMode">
+				@(IsEditMode ? "Exit Edit Mode" : "Edit Stages")
+			</button>
+
+		</div>
+
+		<div>
+			<label for="FestivalMap">Festival Map</label>
+			<div class="map-container" @ref="MapContainerRef" @onclick="OnMapClick">
+				
+				<img class="map" src="data:image/png;base64,@FestivalMap.FestivalMapBase64" @ref="MapImageRef" />
+
+
+				@foreach (var stage in FestivalMap.Stages)
+				{
+					<div class="stage" style="top: @(stage.StageLocation.Y * MapImageHeight)px; left: @(stage.StageLocation.X * MapImageWidth)px;">
+						<p style="display: flex; justify-content: center; gap: 4px;">@stage.Id</p>
+						@if(IsEditMode)
+						{
+						<div style="margin-top: 1px; display: flex; justify-content: center; gap: 4px;">
+							<button style="font-size: 10px;" @onclick="() => EditStage(stage.Id)">✏️</button>
+							<button style="font-size: 10px;" @onclick="() => RemoveStage(stage.Id)">🗑️</button>
+						</div>
+						}
+					</div>
+				}
+			</div>
+		</div>
+	}
+</div>
+
+<script>
+    window.getImageSize = (imgElement) => {
+        const rect = imgElement.getBoundingClientRect();
+        return {
+            width: rect.width,
+            height: rect.height
+        };
+    };
+</script>
+
+<style>
+	.map-container {
+		position: relative; 
+		display: inline-block; 
+		width: 100%; 
+		max-width: 600px; 
+		border: 5px solid #00ff00;
+	}
+
+	.map {
+		width: 100%;
+		height: auto;
+	}
+
+	.stage {
+		position: absolute;
+		width: 50px; 
+		height: 50px; 
+		border: 1px solid #ff0000; 
+		background-color: #ff0000aa;
+		border-radius: 50%; 
+		transform: translate(-50%, -50%); 
+		pointer-events: auto;
+	}
+</style>
+
+<EditStageModal IsVisible="@IsEditModalVisible" Stage="@SelectedStage" OnClose="@CloseEditModal" OnSave="@SaveStageChanges" />
+
+
+@code {
+
+	private FestivalMap FestivalMap = new()
+	{
+		Stages = new List<Stage>()
+	};
+
+	private ElementReference MapImageRef;
+	private ElementReference MapContainerRef;
+
+	private double MapImageWidth;
+	private double MapImageHeight;
+
+	private int stageIdCounter = 1;
+
+	private bool IsEditMode = false;
+	private bool IsEditModalVisible = false;
+	private Stage? SelectedStage;
+
+	private Task CloseEditModal()
+	{
+		IsEditModalVisible = false;
+		SelectedStage = null;
+		return Task.CompletedTask;
+	}
+
+	private Task SaveStageChanges()
+	{
+		// All data is bound to the selected stage, so we just close
+		IsEditModalVisible = false;
+		SelectedStage = null;
+		return Task.CompletedTask;
+	}
+
+	private void ToggleEditMode()
+	{
+		IsEditMode = !IsEditMode;
+	}
+
+	private void RemoveStage(int id)
+	{
+		var stage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
+		if (stage != null)
+		{
+			FestivalMap.Stages.Remove(stage);
+		}
+
+	}
+
+	private void EditStage(int id)
+	{
+		return;
+
+		SelectedStage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
+		if (SelectedStage != null)
+		{
+			IsEditModalVisible = true;
+		}		
+	}
+
+	private async Task OnMapClick(MouseEventArgs e)
+	{
+		// don't add stage markers when in edit mode
+		if (IsEditMode)
+		{
+			return;
+		}
+
+		// image dimmensions
+        var size = await JS.InvokeAsync<DomRect>("getImageSize", MapImageRef);
+        MapImageWidth = size.Width;
+        MapImageHeight = size.Height;
+
+        // Convert to relative coordinates
+        var x = e.OffsetX / MapImageWidth;
+        var y = e.OffsetY / MapImageHeight;
+
+        FestivalMap.Stages.Add(new Stage
+        {
+            Id = stageIdCounter++,
+            StageName = $"Stage {stageIdCounter - 1}",
+            StageLocation = new Point(x, y),
+            Artists = new List<Artist>()
+        });
+	}
+
+
+	private async Task PickImage()
+	{
+		var base64 = await ImagePickerService.PickImageAsBase64Async();
+		if (base64 != null)
+		{
+			FestivalMap.FestivalMapBase64 = base64;
+		}
+	}
+
+    [Inject] private IJSRuntime JS { get; set; }
+}
