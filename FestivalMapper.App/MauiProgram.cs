@@ -19,6 +19,7 @@ namespace FestivalMapper.App
 
             // my services
             builder.Services.AddSingleton<ImagePickerService>();
+            builder.Services.AddSingleton<MapStorageService>();
 
 #if DEBUG
     		builder.Services.AddBlazorWebViewDeveloperTools();

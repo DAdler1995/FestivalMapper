@@ -2,8 +2,10 @@
 @using System.IO
 @using FestivalMapper.App.Services
 @using FestivalMapper.App.Models
+@using FestivalMapper.App.Libraries
 
 @inject ImagePickerService ImagePickerService
+@inject MapStorageService MapStorageService
 
 @page "/map"
 
@@ -12,10 +14,27 @@
 <div class="container mb-3">
 	<div class="row">
 		<div class="col-md-4">
+			<button class="btn btn-outline-primary" @onclick="ImportMapFromFile">📂 Load Map</button>
+		</div>
+		<div class="col-md-4">
 			<button class="btn btn-primary" @onclick="PickImage">Pick Image</button>
 		</div>
 	</div>
 </div>
+
+@if (SavedMaps.Any())
+{
+    <h6>Saved Maps</h6>
+    <ul class="list-group">
+        @foreach (var savedMap in SavedMaps)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@savedMap.FestivalName</span>
+                <button class="btn btn-sm btn-outline-primary" @onclick="() => LoadSelectedMap(savedMap)">Load</button>
+            </li>
+        }
+    </ul>
+}
 
 <div class="container-fluid">
 	@if (!string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
@@ -23,12 +42,15 @@
 		<div class="row">
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Name</span>
-				<input id="FestivalTitle" type="text" class="form-control" aria-label="Festival Name" />
+				<input @bind="FestivalMap.FestivalName" id="FestivalTitle" type="text" class="form-control" aria-label="Festival Name" />
 			</div>
 
 			<div class="input-group mb-3">
 				<span class="input-group-text">Description</span>
-				<textarea id="FestivalDesc" class="form-control" rows="3" aria-label="Festival Description" />
+				<textarea  @bind="FestivalMap.Description" class="form-control" rows="3" aria-label="Festival Description" />
+			</div>
+			<div class="d-flex gap-2 mb-3">
+				<button class="btn btn-success" @onclick="SaveCurrentMap">💾 Save Map</button>
 			</div>
 
 			<button class="btn btn-secondary" @onclick="ToggleEditMode">
@@ -116,6 +138,8 @@
 		Stages = new List<Stage>()
 	};
 
+	private List<FestivalMap> SavedMaps = new();
+
 	private Dictionary<string, List<(string ArtistName, string StageId)>> ConflictDetails = new();
 
 	private ElementReference MapImageRef;
@@ -131,6 +155,59 @@
 	private Stage? SelectedStage;
 
 	private int stageMarkerRadius = 25;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadMaps();
+	}
+
+	private async Task ImportMapFromFile()
+	{
+		try
+		{
+			var file = await FilePicker.Default.PickAsync(new PickOptions
+			{
+				PickerTitle = "Select Festival Map",
+				FileTypes = FileTypeHelper.Json
+			});
+
+			if (file != null)
+			{
+				FestivalMap? importedFestivalMap = await MapStorageService.ImportMapAsync(file);
+				if (importedFestivalMap != null)
+				{
+					LoadSelectedMap(importedFestivalMap);
+				}
+				
+				await LoadMaps();
+			}
+		}
+		catch (Exception)
+		{
+			
+		}
+	}
+
+	private async Task SaveCurrentMap()
+	{
+		if (!string.IsNullOrEmpty(FestivalMap.FestivalName))
+		{
+			await MapStorageService.SaveMapAsync(FestivalMap);
+			await LoadMaps();
+		}
+	}
+
+	private async Task LoadMaps()
+	{
+		SavedMaps = await MapStorageService.LoadAllMapsAsync();
+	}
+
+	private Task LoadSelectedMap(FestivalMap map)
+	{
+		FestivalMap = map;
+		DetectScheduleConflicts();
+		return Task.CompletedTask;
+	}
 
 	private string RandomStageColor()
 	{
