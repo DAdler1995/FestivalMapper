@@ -7,6 +7,7 @@
 @inject ImagePickerService ImagePickerService
 @inject MapStorageService MapStorageService
 
+@page "/"
 @page "/map"
 
 <PageTitle>Festival Map</PageTitle>
@@ -14,7 +15,7 @@
 <div class="container mb-3">
 	<div class="row">
 		<div class="col-md-4">
-			<button class="btn btn-outline-primary" @onclick="ImportMapFromFile">📂 Load Map</button>
+			<button class="btn btn-outline-primary" @onclick="ImportMapFromFile">📂 Import Map</button>
 		</div>
 		<div class="col-md-4">
 			<button class="btn btn-primary" @onclick="PickImage">Pick Image</button>
@@ -31,6 +32,7 @@
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <span>@savedMap.FestivalName</span>
                 <button class="btn btn-sm btn-outline-primary" @onclick="() => LoadSelectedMap(savedMap)">Load</button>
+                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMap(savedMap)">🗑️</button>
             </li>
         }
     </ul>
@@ -178,13 +180,13 @@
 				{
 					LoadSelectedMap(importedFestivalMap);
 				}
-				
+
 				await LoadMaps();
 			}
 		}
 		catch (Exception)
 		{
-			
+
 		}
 	}
 
@@ -207,6 +209,19 @@
 		FestivalMap = map;
 		DetectScheduleConflicts();
 		return Task.CompletedTask;
+	}
+
+	private async Task DeleteMap(FestivalMap map)
+	{
+		if (FestivalMap == map)
+		{
+			FestivalMap = new();
+		}
+
+		await MapStorageService.DeleteMapAsync(map.FestivalName);
+		await LoadMaps();
+
+		StateHasChanged();
 	}
 
 	private string RandomStageColor()
