@@ -22,7 +22,7 @@ namespace FestivalMapper.App.Services
         public async Task SaveMapAsync(FestivalMap map)
         {
             var fileNameSafe = string.Join("_", map.FestivalName.Split(Path.GetInvalidFileNameChars()));
-            var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.json");
+            var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
 
             var json = JsonSerializer.Serialize(map, new JsonSerializerOptions
             {
@@ -34,7 +34,7 @@ namespace FestivalMapper.App.Services
 
         public async Task<List<FestivalMap>> LoadAllMapsAsync()
         {
-            var files = Directory.GetFiles(SaveDirectory, "*.json");
+            var files = Directory.GetFiles(SaveDirectory, "*.festivalmap");
             var maps = new List<FestivalMap>();
 
             foreach (var file in files)
@@ -61,7 +61,7 @@ namespace FestivalMapper.App.Services
         public async Task DeleteMapAsync(string festivalName)
         {
             var fileNameSafe = string.Join("_", festivalName.Split(Path.GetInvalidFileNameChars()));
-            var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.json");
+            var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
 
             if (File.Exists(filePath))
             {
@@ -73,7 +73,7 @@ namespace FestivalMapper.App.Services
         {
             try
             {
-                if (file == null || Path.GetExtension(file.FileName)?.ToLower() != ".json")
+                if (file == null || Path.GetExtension(file.FileName)?.ToLower() != ".festivalmap")
                 {
                     return null;
                 }
@@ -89,7 +89,7 @@ namespace FestivalMapper.App.Services
                 }
 
                 var fileNameSafe = string.Join("_", map.FestivalName.Split(Path.GetInvalidFileNameChars()));
-                var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.json");
+                var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
 
                 await File.WriteAllTextAsync(filePath, json);
                 return map;
