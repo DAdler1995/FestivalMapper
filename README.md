@@ -11,14 +11,14 @@ A cross-platform .NET 8 MAUI Blazor app for planning and managing music festival
 - 📝 Edit stage names, descriptions, and artist lineups
 - ⏱️ Schedule artist set times with automatic conflict detection
 - ⚠️ Highlights overlapping set times across all stages
-- 💾 Save and load maps locally as `.json` files (fully offline)
-- 📂 Import existing `.json` map files from anywhere on your device
+- 💾 Save and load maps locally as `.festivalmap` (json file) files (fully offline)
+- 📂 Import existing `.festivalmap` (json file) map files from anywhere on your device
 
 ---
 
 ## 📁 File Storage
 
-- Saved maps are stored as `.json` files in:
+- Saved maps are stored as `.festivalmap` (json file) files in:
   - **Windows/macOS/Android/iOS**: AppData directory under `/maps/`
 - Each map includes:
   - Festival name and description
@@ -30,7 +30,7 @@ A cross-platform .NET 8 MAUI Blazor app for planning and managing music festival
 
 ## 🧰 Technologies Used
 
-- **.NET 8**
+- **.NET 9**
 - **MAUI Blazor Hybrid**
 - **Bootstrap 5.1** for responsive styling
 - **System.Text.Json** for local serialization
