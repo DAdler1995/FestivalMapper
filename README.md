@@ -1,6 +1,6 @@
 # FestivalMapper
 
-A cross-platform .NET 8 MAUI Blazor app for planning and managing music festival stage layouts, artist lineups, and schedules — all stored locally with no network dependency.
+A cross-platform .NET 9 MAUI Blazor app for planning and managing music festival stage layouts, artist lineups, and schedules — all stored locally with no network dependency.
 
 ---
 
