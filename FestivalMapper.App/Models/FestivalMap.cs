@@ -11,7 +11,7 @@ namespace FestivalMapper.App.Models
         public string FestivalName { get; set; }
         public string Description { get; set; }
         public string FestivalMapBase64 { get; set; }
-        public DateTime FestivalStartDate { get; set; }
+        public DateTime? FestivalStartDate { get; set; }
         public List<Stage> Stages { get; set; } = new List<Stage>();
 
     }
