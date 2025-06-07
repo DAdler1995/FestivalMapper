@@ -72,7 +72,7 @@
                                 <input class="form-control" placeholder="Name" @bind="NewArtist.Name" />
                             </div>
                             <div class="col-6">
-                                <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="NewArtistStartTimeLocal" />
+                                <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="FestivalStartDate" />
                             </div>
                         </div>
                         <div class="mt-2">
@@ -103,9 +103,9 @@
     [Parameter] public EventCallback OnArtistChange { get; set; }
     [Parameter] public Func<string, List<string>>? GetConflictMessage { get; set; }
     [Parameter] public EventCallback OnDeleteStage { get; set; }
+    [Parameter] public DateTime FestivalStartDate { get; set; }
 
     private Artist NewArtist = new();
-    private DateTime NewArtistStartTimeLocal = DateTime.Now;
 
     private async Task AddArtist()
     {
@@ -123,15 +123,15 @@
         {
             Name = NewArtist.Name,
             Description = NewArtist.Description,
-            SetTimeStart = NewArtistStartTimeLocal.ToUniversalTime(),
-            SetTimeEnd = NewArtist.SetDurationMinutes.HasValue ? NewArtistStartTimeLocal.AddMinutes(NewArtist.SetDurationMinutes.Value).ToUniversalTime() : null,
+            SetTimeStart = FestivalStartDate.ToUniversalTime(),
+            SetTimeEnd = NewArtist.SetDurationMinutes.HasValue ? FestivalStartDate.AddMinutes(NewArtist.SetDurationMinutes.Value).ToUniversalTime() : null,
             SetDurationMinutes = NewArtist.SetDurationMinutes
         };
 
         Stage.Artists.Add(artist);
 
         NewArtist = new();
-        NewArtistStartTimeLocal = DateTime.Now;
+        FestivalStartDate = DateTime.Now;
 
         await OnArtistChange.InvokeAsync(null);
     }

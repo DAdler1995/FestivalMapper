@@ -51,6 +51,11 @@
 				<span class="input-group-text">Description</span>
 				<textarea  @bind="FestivalMap.Description" class="form-control" rows="3" aria-label="Festival Description" />
 			</div>
+
+			<div class="input-group mb-3">
+				<span class="input-group-text">Festival Start Date</span>
+				<input  @bind="FestivalMap.FestivalStartDate" class="form-control" type="date" aria-label="Festival Start Date" />
+			</div>
 			<div class="d-flex gap-2 mb-3">
 				<button class="btn btn-success" @onclick="SaveCurrentMap">💾 Save Map</button>
 			</div>
@@ -130,14 +135,15 @@
 	}
 </style>
 
-<EditStageModal IsVisible="@IsEditModalVisible" Stage="@SelectedStage" OnClose="@CloseEditModal" OnSave="@SaveStageChanges" IsArtistConflicting="@IsArtistConflicting" OnArtistChange="@DetectScheduleConflicts" GetConflictMessage="GetConflictMessage" OnDeleteStage="DeleteStage" />
+<EditStageModal IsVisible="@IsEditModalVisible" Stage="@SelectedStage" OnClose="@CloseEditModal" OnSave="@SaveStageChanges" IsArtistConflicting="@IsArtistConflicting" OnArtistChange="@DetectScheduleConflicts" GetConflictMessage="GetConflictMessage" OnDeleteStage="DeleteStage" FestivalStartDate="FestivalMap.FestivalStartDate" />
 
 
 @code {
 
 	private FestivalMap FestivalMap = new()
 	{
-		Stages = new List<Stage>()
+		Stages = new List<Stage>(),
+		FestivalStartDate = DateTime.Now
 	};
 
 	private List<FestivalMap> SavedMaps = new();
