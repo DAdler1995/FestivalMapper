@@ -242,17 +242,17 @@
 		return FestivalMap.Stages.FirstOrDefault(x => x.Id == stageId).StageName;
 	}
 
-	private string? GetConflictMessage(string artistId)
+	private List<string> GetConflictMessage(string artistId)
 	{
 		if (!ConflictDetails.TryGetValue(artistId, out var conflicts) || conflicts.Count == 0)
-			return null;
+			return new List<string>();
 
 
 		var messages = conflicts
 			.Select(c => $"Conflict with {c.ArtistName} at {GetStageName(c.StageId)}")
 			.ToList();
 
-		return string.Join("; ", messages);
+		return messages;
 	}
 
 	private void DetectScheduleConflicts()

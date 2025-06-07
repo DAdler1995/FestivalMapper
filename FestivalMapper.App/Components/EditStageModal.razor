@@ -37,19 +37,24 @@
                     @foreach (var artist in Stage.Artists.OrderBy(a => a.SetTimeStart))
                     {
                         
-                        <div class="mb-3">
+                        <div class="mb-3 w-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong title="@(GetConflictMessage.Invoke(artist.Id) ?? "")" class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
+                                    <strong class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
+                                    <button class="btn btn-sm btn-danger text-white float-end" @onclick="() => RemoveArtist(artist.Id)">🗑️</button>
                                     <br />
                                     <small>
                                         @artist.SetTimeStart.ToLocalTime().ToString("t") –
                                         @(artist.SetDurationMinutes.HasValue ? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "NO END TIME")
                                     </small>                                    
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveArtist(artist.Id)">🗑️</button>
                                     @if (!string.IsNullOrWhiteSpace(artist.Description))
                                     {
                                         <p class="mt-2 mb-0">@artist.Description</p>
+                                    }
+
+                                    @foreach (var conflictMessage in GetConflictMessage.Invoke(artist.Id))
+                                    {
+                                        <p style="font-size: 75%" class="text-danger m-0 p-0">@conflictMessage</p>
                                     }
                                 </div>
                             </div>
@@ -95,7 +100,7 @@
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public Func<string, bool>? IsArtistConflicting { get; set; } = _ => false;
     [Parameter] public EventCallback OnArtistChange { get; set; }
-    [Parameter] public Func<string, string?>? GetConflictMessage { get; set; }
+    [Parameter] public Func<string, List<string>>? GetConflictMessage { get; set; }
 
     private Artist NewArtist = new();
     private DateTime NewArtistStartTimeLocal = DateTime.Now;
