@@ -130,7 +130,7 @@
 	}
 </style>
 
-<EditStageModal IsVisible="@IsEditModalVisible" Stage="@SelectedStage" OnClose="@CloseEditModal" OnSave="@SaveStageChanges" IsArtistConflicting="@IsArtistConflicting" OnArtistChange="@DetectScheduleConflicts" GetConflictMessage="GetConflictMessage" />
+<EditStageModal IsVisible="@IsEditModalVisible" Stage="@SelectedStage" OnClose="@CloseEditModal" OnSave="@SaveStageChanges" IsArtistConflicting="@IsArtistConflicting" OnArtistChange="@DetectScheduleConflicts" GetConflictMessage="GetConflictMessage" OnDeleteStage="DeleteStage" />
 
 
 @code {
@@ -161,6 +161,25 @@
 	protected override async Task OnInitializedAsync()
 	{
 		await LoadMaps();
+	}
+
+	private async Task DeleteStage()
+	{
+		if (SelectedStage != null)
+		{
+			FestivalMap.Stages.Remove(SelectedStage);
+
+			SelectedStage = null;
+			IsEditModalVisible = false;
+			DetectScheduleConflicts();
+		}
+
+		if (!FestivalMap.Stages.Any())
+		{
+			await Task.Delay(100);
+			IsEditMode = false;
+			StateHasChanged();
+		}
 	}
 
 	private async Task ImportMapFromFile()

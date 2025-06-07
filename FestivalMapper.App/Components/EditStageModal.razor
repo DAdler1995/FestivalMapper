@@ -1,5 +1,6 @@
-﻿
-@using FestivalMapper.App.Models
+﻿@using FestivalMapper.App.Models
+
+@inject IJSRuntime JS
 
 @if (IsVisible)
 {
@@ -13,80 +14,80 @@
                 </div>
 
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="stageName" class="form-label">Stage Name</label>
-                        <input id="stageName" type="text" class="form-control" @bind="Stage.StageName" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="stageDesc" class="form-label">Description</label>
-                        <textarea id="stageDesc" class="form-control" rows="3" @bind="Stage.StageDescription"></textarea>
-                    </div>
-                </div>
-
-@*                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
-                    <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
-                </div> *@
-
-
-                <hr />
-
-                <div class="modal-body">
-                    <h6>Artists</h6>
-                    @foreach (var artist in Stage.Artists.OrderBy(a => a.SetTimeStart))
-                    {
-                        
-                        <div class="mb-3 w-100">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
-                                    <button class="btn btn-sm btn-danger text-white float-end" @onclick="() => RemoveArtist(artist.Id)">🗑️</button>
-                                    <br />
-                                    <small>
-                                        @artist.SetTimeStart.ToLocalTime().ToString("t") –
-                                        @(artist.SetDurationMinutes.HasValue ? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "NO END TIME")
-                                    </small>                                    
-                                    @if (!string.IsNullOrWhiteSpace(artist.Description))
-                                    {
-                                        <p class="mt-2 mb-0">@artist.Description</p>
-                                    }
-
-                                    @foreach (var conflictMessage in GetConflictMessage.Invoke(artist.Id))
-                                    {
-                                        <p style="font-size: 75%" class="text-danger m-0 p-0">@conflictMessage</p>
-                                    }
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Stage Name</span>
+                                    <input id="stageName" type="text" class="form-control" @bind="Stage.StageName" />
+                                    <button class="btn btn-danger float-end" @onclick="() => DeleteStage()">🗑️</button>
                                 </div>
                             </div>
                         </div>
 
-                    }
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Description</span>
+                                    <textarea id="stageDesc" class="form-control" rows="3" @bind="Stage.StageDescription"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <h6>Artists</h6>
+                            @foreach (var artist in Stage.Artists.OrderBy(a => a.SetTimeStart))
+                            {
+
+                                <div class="mb-3 w-100">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-fill">
+                                            <strong class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
+                                            <button class="btn btn-sm btn-danger float-end" @onclick="() => RemoveArtist(artist.Id)">🗑️</button>
+                                            <br />
+                                            <small>
+                                                @artist.SetTimeStart.ToLocalTime().ToString("t") –
+                                                @(artist.SetDurationMinutes.HasValue? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "NO END TIME")
+                                            </small>
+                                            @if (!string.IsNullOrWhiteSpace(artist.Description))
+                                            {
+                                                <p class="mt-2 mb-0">@artist.Description</p>
+                                            }
+
+                                            @foreach (var conflictMessage in GetConflictMessage.Invoke(artist.Id))
+                                            {
+                                                <p style="font-size: 75%" class="text-danger m-0 p-0">@conflictMessage</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                        <hr />
+
+                        <h6>Add Artist</h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input class="form-control" placeholder="Name" @bind="NewArtist.Name" />
+                            </div>
+                            <div class="col-6">
+                                <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="NewArtistStartTimeLocal" />
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <input class="form-control" placeholder="Description" @bind="NewArtist.Description" />
+                        </div>
+                        <div class="mt-2 row g-2">
+                            <div class="col-6">
+                                <input class="form-control" placeholder="Duration (min)" type="number" min="0" @bind="NewArtist.SetDurationMinutes" />
+                            </div>
+                            <div class="col-6 d-flex align-items-end justify-content-end">
+                                <button class="btn btn-sm btn-primary" @onclick="AddArtist">Add Artist</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <hr />
-
-                <div class="modal-body">
-                    <h6>Add Artist</h6>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <input class="form-control" placeholder="Name" @bind="NewArtist.Name" />
-                        </div>
-                        <div class="col-6">
-                            <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="NewArtistStartTimeLocal" />
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <input class="form-control" placeholder="Description" @bind="NewArtist.Description" />
-                    </div>
-                    <div class="mt-2 row g-2">
-                        <div class="col-6">
-                            <input class="form-control" placeholder="Duration (min)" type="number" min="0" @bind="NewArtist.SetDurationMinutes" />
-                        </div>
-                        <div class="col-6 d-flex align-items-end justify-content-end">
-                            <button class="btn btn-sm btn-primary" @onclick="AddArtist">Add Artist</button>
-                        </div>
-                    </div>
-                </div>               
 
             </div>
         </div>
@@ -101,6 +102,7 @@
     [Parameter] public Func<string, bool>? IsArtistConflicting { get; set; } = _ => false;
     [Parameter] public EventCallback OnArtistChange { get; set; }
     [Parameter] public Func<string, List<string>>? GetConflictMessage { get; set; }
+    [Parameter] public EventCallback OnDeleteStage { get; set; }
 
     private Artist NewArtist = new();
     private DateTime NewArtistStartTimeLocal = DateTime.Now;
@@ -136,13 +138,19 @@
 
     private async Task RemoveArtist(string id)
     {
+
         var artist = Stage.Artists.FirstOrDefault(a => a.Id == id);
         if (artist != null)
         {
-            Stage.Artists.Remove(artist);
+            var confirm = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this artist set \"{artist.Name}\"?");
+
+            if (confirm)
+            {
+                Stage.Artists.Remove(artist);
+                await OnArtistChange.InvokeAsync(null);
+            }
         }
 
-        await OnArtistChange.InvokeAsync(null);
     }
 
     private async Task Close()
@@ -153,5 +161,14 @@
     private async Task Save()
     {
         await OnSave.InvokeAsync(null);
+    }
+
+    private async Task DeleteStage()
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the stage \"{Stage.StageName}\"?");
+        if (confirm)
+        {
+            await OnDeleteStage.InvokeAsync(null);
+        }
     }
 }
