@@ -21,6 +21,9 @@ namespace FestivalMapper.App.Services
 
         public async Task SaveMapAsync(FestivalMap map)
         {
+            // save date as UTC
+            map.FestivalStartDate = map.FestivalStartDate.Date.ToUniversalTime();
+
             var fileNameSafe = string.Join("_", map.FestivalName.Split(Path.GetInvalidFileNameChars()));
             var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
 

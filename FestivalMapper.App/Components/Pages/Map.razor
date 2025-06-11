@@ -12,7 +12,7 @@
 
 <PageTitle>Festival Map</PageTitle>
 
-<div class="container mb-3">
+<div class="container-fluid mb-3">
 	<div class="row">
 		<div class="col-md-4">
 			<button class="btn btn-outline-primary" @onclick="ImportMapFromFile">📂 Import Map</button>
@@ -142,7 +142,8 @@
 	OnArtistChange="@DetectScheduleConflicts" 
 	GetConflictMessage="GetConflictMessage" 
 	OnDeleteStage="DeleteStage" 
-	FestivalStartDate="FestivalMap.FestivalStartDate" />
+	FestivalStartDate="FestivalMap.FestivalStartDate"
+	AutoSave="AutoSaveAsync"/>
 
 
 @code {
@@ -169,11 +170,27 @@
 	private Stage? SelectedStage;
 
 	private int stageMarkerRadius = 25;
+	private bool savePending;
 
 	protected override async Task OnInitializedAsync()
 	{
 		await LoadMaps();
 	}
+
+	private async Task AutoSaveAsync()
+	{
+		if (savePending || string.IsNullOrWhiteSpace(FestivalMap.FestivalName))
+		{
+			return;
+		}
+
+		savePending = true;
+		await Task.Delay(500);
+
+		await MapStorageService.SaveMapAsync(FestivalMap);
+		savePending = false;
+	}
+
 
 	private async Task DeleteStage()
 	{
@@ -192,6 +209,8 @@
 			IsEditMode = false;
 			StateHasChanged();
 		}
+
+		await AutoSaveAsync();
 	}
 
 	private async Task ImportMapFromFile()
@@ -237,6 +256,8 @@
 
 	private Task LoadSelectedMap(FestivalMap map)
 	{
+		map.FestivalStartDate = map.FestivalStartDate.ToLocalTime();
+
 		FestivalMap = map;
 		DetectScheduleConflicts();
 		return Task.CompletedTask;
@@ -365,7 +386,7 @@
 		IsEditMode = !IsEditMode;
 	}
 
-	private void RemoveStage(string id)
+	private async Task RemoveStage(string id)
 	{
 		var stage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
 		if (stage != null)
@@ -386,6 +407,8 @@
 				});
 			});			
 		}
+
+		await AutoSaveAsync();
 
 	}
 
@@ -434,10 +457,10 @@
 		var relativeX = e.OffsetX / MapImageWidth;
 		var relativeY = e.OffsetY / MapImageHeight;
 
-		AddStage(relativeX, relativeY);
+		await AddStage(relativeX, relativeY);
 	}
 
-	private void AddStage(double x, double y)
+	private async Task AddStage(double x, double y)
 	{
 		var newStage = new Stage
 			{
@@ -449,6 +472,8 @@
 
 		FestivalMap.Stages.Add(newStage);
 		stageIdCounter++;
+
+		await AutoSaveAsync();
 	}
 
 

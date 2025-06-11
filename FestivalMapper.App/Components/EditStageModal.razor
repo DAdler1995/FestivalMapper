@@ -54,7 +54,7 @@
                                             <button class="btn btn-sm btn-danger float-end" @onclick="() => RemoveArtist(artist.Id)">🗑️</button>
                                             <br />
                                                 <small>
-                                                @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetDurationMinutes.HasValue? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "NO END TIME")
+                                                    @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.HasValue? artist.SetTimeEnd.Value.ToLocalTime().ToString("t") : "NO END TIME")
                                                 </small>
                                             @if (!string.IsNullOrWhiteSpace(artist.Description))
                                             {
@@ -86,7 +86,7 @@
                             <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text">Set Start Time</span>
-                                    <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="NewArtist.SetTimeStart" />
+                                    <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="ArtistStartTimeLocal" />
                                 </div>
                             </div>
                         </div>
@@ -95,7 +95,7 @@
                             <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text">Set End Time</span>
-                                    <input class="form-control" placeholder="End Time" type="datetime-local" @bind="NewArtist.SetTimeEnd" />
+                                    <input class="form-control" placeholder="End Time" type="datetime-local" @bind="ArtistEndTimeLocal" />
                                 </div>
                             </div>
                         </div>
@@ -147,18 +147,32 @@
     [Parameter] public Func<string, List<string>>? GetConflictMessage { get; set; }
     [Parameter] public EventCallback OnDeleteStage { get; set; }
     [Parameter] public DateTime FestivalStartDate { get; set; } = DateTime.Now;
+    [Parameter] public EventCallback AutoSave { get; set; }
 
     [Inject] private IJSRuntime JS { get; set; }
 
     private Artist NewArtist = new();
+    private DateTime ArtistStartTimeLocal;
+    private DateTime? ArtistEndTimeLocal;
+
+
+    private void ResetNewArtist()
+    {
+        ArtistStartTimeLocal = FestivalStartDate;
+        ArtistEndTimeLocal = FestivalStartDate;
+
+        NewArtist = new()
+        {
+            SetTimeStart = FestivalStartDate,
+            SetTimeEnd = FestivalStartDate
+        };
+    }
 
     protected override void OnParametersSet()
     {
         // Set default artist time when modal opens
-        NewArtist = new()
-        {
-            SetTimeStart = FestivalStartDate
-        };
+        ResetNewArtist();
+        StateHasChanged();
     }
 
     private void EditArtist(string id)
@@ -166,12 +180,13 @@
         var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == id);
         if (existingArtist != null)
         {
-            existingArtist.SetTimeEnd = existingArtist.SetTimeEnd.HasValue ? existingArtist.SetTimeEnd.Value.ToLocalTime() : null;
-            existingArtist.SetTimeStart = existingArtist.SetTimeStart.ToLocalTime();
+            ArtistStartTimeLocal = existingArtist.SetTimeStart.ToLocalTime();
+            ArtistEndTimeLocal = existingArtist.SetTimeEnd?.ToLocalTime();
+
+            // existingArtist.SetTimeEnd = existingArtist.SetTimeEnd?.ToLocalTime();
+            // existingArtist.SetTimeStart = existingArtist.SetTimeStart.ToLocalTime();
 
             NewArtist = existingArtist;
-
-            StateHasChanged();
         }
     }
 
@@ -185,8 +200,8 @@
         var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == NewArtist.Id);
         if (existingArtist != null)
         {
-            NewArtist.SetTimeStart = NewArtist.SetTimeStart.ToUniversalTime();
-            NewArtist.SetTimeEnd = NewArtist.SetTimeEnd.HasValue ? NewArtist.SetTimeEnd.Value.ToUniversalTime() : null;
+            existingArtist.SetTimeStart = DateTime.SpecifyKind(ArtistStartTimeLocal, DateTimeKind.Local).ToUniversalTime();
+            existingArtist.SetTimeEnd = ArtistEndTimeLocal.HasValue ? DateTime.SpecifyKind(ArtistEndTimeLocal.Value, DateTimeKind.Local).ToUniversalTime() : null;
 
             existingArtist = NewArtist;
         }
@@ -205,10 +220,10 @@
             Stage.Artists.Add(artist);
         }
 
-        NewArtist = new() { SetTimeStart = FestivalStartDate };
+        ResetNewArtist();
 
-        StateHasChanged();
         await OnArtistChange.InvokeAsync(null);
+        await AutoSave.InvokeAsync(null);
     }
 
     private async Task RemoveArtist(string id)
@@ -223,6 +238,7 @@
             {
                 Stage.Artists.Remove(artist);
                 await OnArtistChange.InvokeAsync(null);
+                await AutoSave.InvokeAsync(null);
             }
         }
 
@@ -231,11 +247,13 @@
     private async Task Close()
     {
         await OnClose.InvokeAsync(null);
+        await AutoSave.InvokeAsync(null);
     }
 
     private async Task Save()
     {
         await OnSave.InvokeAsync(null);
+        await AutoSave.InvokeAsync(null);
     }
 
     private async Task DeleteStage()
@@ -244,6 +262,7 @@
         if (confirm)
         {
             await OnDeleteStage.InvokeAsync(null);
+            await AutoSave.InvokeAsync(null);
         }
     }
 }
