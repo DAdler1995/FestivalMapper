@@ -36,6 +36,7 @@
             </li>
         }
     </ul>
+	<hr />
 }
 
 <div class="container-fluid">
@@ -59,15 +60,9 @@
 			<div class="d-flex gap-2 mb-3">
 				<button class="btn btn-success" @onclick="SaveCurrentMap">💾 Save Map</button>
 			</div>
-
-			<button class="btn btn-secondary" @onclick="ToggleEditMode">
-				@(IsEditMode ? "Exit Edit Mode" : "Edit Stages")
-			</button>
-
 		</div>
 
 		<div>
-			<label for="FestivalMap">Festival Map</label>
 			<div class="map-container" @ref="MapContainerRef" @onclick="OnMapClick">
 				
 				<img class="map" src="data:image/png;base64,@FestivalMap.FestivalMapBase64" @ref="MapImageRef" @onload="GetMapImageSize" />
@@ -75,15 +70,8 @@
 
 				@foreach (var stage in FestivalMap.Stages)
 				{
-					<div class="stage" style="top: @(stage.StageLocation.Y * MapImageHeight)px; left: @(stage.StageLocation.X * MapImageWidth)px; background-color: @stage.StageBg; border: 1px solid @stage.StageColor;">
-						<p style="display: flex; justify-content: center; gap: 4px; color: #ffffff; text-align: center;">@stage.StageName</p>
-						@if(IsEditMode)
-						{
-						<div class="edit-stage">
-							<button style="font-size: 10px;" @onclick="() => EditStage(stage.Id)">✏️</button>
-							<button style="font-size: 10px;" @onclick="() => RemoveStage(stage.Id)">🗑️</button>
-						</div>
-						}
+					<div class="stage d-flex justify-content-center align-items-center text-white text-center" style="top: @(stage.StageLocation.Y * MapImageHeight)px; left: @(stage.StageLocation.X * MapImageWidth)px; background-color: @stage.StageBg; border: 1px solid @stage.StageColor;">
+						<span>@stage.StageName</span>
 					</div>
 				}
 			</div>
@@ -122,14 +110,15 @@
 		border-radius: 50%; 
 		transform: translate(-50%, -50%); 
 		pointer-events: none;
-	}
 
-	.edit-stage {
-		margin-top: 1px; 
-		display: flex; 
-		justify-content: center; 
-		gap: 4px; 
-		pointer-events: auto;
+		color: #fff;
+		font-size: 0.65rem;
+		font-weight: bold;
+		cursor: pointer;
+		overflow: hidden;
+		white-space: wrap;
+		text-overflow: ellipsis;
+		padding: 2px;
 	}
 </style>
 
@@ -165,7 +154,6 @@
 
 	private int stageIdCounter = 1;
 
-	private bool IsEditMode = false;
 	private bool IsEditModalVisible = false;
 	private Stage? SelectedStage;
 
@@ -206,7 +194,6 @@
 		if (!FestivalMap.Stages.Any())
 		{
 			await Task.Delay(100);
-			IsEditMode = false;
 			StateHasChanged();
 		}
 
@@ -381,37 +368,6 @@
 		await SaveCurrentMap();
 	}
 
-	private void ToggleEditMode()
-	{
-		IsEditMode = !IsEditMode;
-	}
-
-	private async Task RemoveStage(string id)
-	{
-		var stage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
-		if (stage != null)
-		{
-			FestivalMap.Stages.Remove(stage);
-		}
-
-		// delay exiting edit mode to prevent map click trigger
-		if (!FestivalMap.Stages.Any())
-		{
-			_ = Task.Run(async () =>
-			{
-				await Task.Delay(100);
-				await InvokeAsync(() =>
-				{
-					IsEditMode = false;
-					StateHasChanged();
-				});
-			});			
-		}
-
-		await AutoSaveAsync();
-
-	}
-
 	private void EditStage(string id)
 	{
 		SelectedStage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
@@ -424,7 +380,7 @@
 	private async Task OnMapClick(MouseEventArgs e)
 	{
 		// don't add stage markers when in edit mode or there is no map size
-		if (IsEditMode || MapImageHeight == 0 || MapImageWidth == 0)
+		if (MapImageHeight == 0 || MapImageWidth == 0)
 		{
 			return;
 		}
