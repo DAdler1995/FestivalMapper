@@ -105,9 +105,7 @@
 	.map-container {
 		position: relative; 
 		display: inline-block; 
-		width: 100%; 
-		max-width: 600px; 
-		border: 5px solid #00ff00;
+		width: 100%;
 	}
 
 	.map {
@@ -120,7 +118,7 @@
 		width: @($"{stageMarkerRadius * 2}px"); 
 		height: @($"{stageMarkerRadius * 2}px"); 
 		border: 1px solid #ff0000; 
-		background-color: #ff0000aa;
+		background-color: #ff0000bf;
 		border-radius: 50%; 
 		transform: translate(-50%, -50%); 
 		pointer-events: none;
@@ -135,15 +133,23 @@
 	}
 </style>
 
-<EditStageModal IsVisible="@IsEditModalVisible" Stage="@SelectedStage" OnClose="@CloseEditModal" OnSave="@SaveStageChanges" IsArtistConflicting="@IsArtistConflicting" OnArtistChange="@DetectScheduleConflicts" GetConflictMessage="GetConflictMessage" OnDeleteStage="DeleteStage" FestivalStartDate="FestivalMap.FestivalStartDate" />
+<EditStageModal 
+	IsVisible="@IsEditModalVisible" 
+	Stage="@SelectedStage" 
+	OnClose="@CloseEditModal" 
+	OnSave="@SaveStageChanges" 
+	IsArtistConflicting="@IsArtistConflicting" 
+	OnArtistChange="@DetectScheduleConflicts" 
+	GetConflictMessage="GetConflictMessage" 
+	OnDeleteStage="DeleteStage" 
+	FestivalStartDate="FestivalMap.FestivalStartDate" />
 
 
 @code {
 
 	private FestivalMap FestivalMap = new()
 	{
-		Stages = new List<Stage>(),
-		FestivalStartDate = DateTime.Now
+		Stages = new List<Stage>()
 	};
 
 	private List<FestivalMap> SavedMaps = new();
@@ -272,7 +278,6 @@
 		if (!ConflictDetails.TryGetValue(artistId, out var conflicts) || conflicts.Count == 0)
 			return new List<string>();
 
-
 		var messages = conflicts
 			.Select(c => $"Conflict with {c.ArtistName} at {GetStageName(c.StageId)}")
 			.ToList();
@@ -347,12 +352,12 @@
 		return Task.CompletedTask;
 	}
 
-	private Task SaveStageChanges()
+	private async Task SaveStageChanges()
 	{
 		// All data is bound to the selected stage, so we just close
 		IsEditModalVisible = false;
 		SelectedStage = null;
-		return Task.CompletedTask;
+		await SaveCurrentMap();
 	}
 
 	private void ToggleEditMode()

@@ -1,7 +1,5 @@
 ﻿@using FestivalMapper.App.Models
 
-@inject IJSRuntime JS
-
 @if (IsVisible)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" role="dialog">
@@ -55,9 +53,9 @@
                                             <strong class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
                                             <button class="btn btn-sm btn-danger float-end" @onclick="() => RemoveArtist(artist.Id)">🗑️</button>
                                             <br />
-                                            <small>
+                                                <small>
                                                 @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetDurationMinutes.HasValue? artist.SetTimeStart.AddMinutes(artist.SetDurationMinutes.Value).ToLocalTime().ToString("t") : "NO END TIME")
-                                            </small>
+                                                </small>
                                             @if (!string.IsNullOrWhiteSpace(artist.Description))
                                             {
                                                 <p class="mt-2 mb-0">@artist.Description</p>
@@ -75,23 +73,60 @@
                         <hr />
 
                         <h6>Add Artist</h6>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <input class="form-control" placeholder="Name" @bind="NewArtist.Name" />
-                            </div>
-                            <div class="col-6">
-                                <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="NewArtist.SetTimeStart" />
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text">Artist Name</span>
+                                    <input class="form-control" placeholder="Name" @bind="NewArtist.Name" />
+                                </div>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <input class="form-control" placeholder="Description" @bind="NewArtist.Description" />
-                        </div>
-                        <div class="mt-2 row g-2">
-                            <div class="col-6">
-                                <input class="form-control" placeholder="Duration (min)" type="number" min="0" @bind="NewArtist.SetDurationMinutes" />
+
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text">Set Start Time</span>
+                                    <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="NewArtist.SetTimeStart" />
+                                </div>
                             </div>
-                            <div class="col-6 d-flex align-items-end justify-content-end">
-                                <button class="btn btn-sm btn-primary" @onclick="SaveArtist">Save Artist</button>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text">Set End Time</span>
+                                    <input class="form-control" placeholder="End Time" type="datetime-local" @bind="NewArtist.SetTimeEnd" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text">Set Description</span>
+                                    <input class="form-control" placeholder="Description" @bind="NewArtist.Description" />
+                                </div>
+                            </div>
+                        </div>
+
+                        @* <div class="row mb-2">
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">Set End Time</span>
+                                    <input class="form-control" placeholder="End Time" type="time" min="0" @bind="NewArtist.SetTimeEnd" />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">Set Duration</span>
+                                    <input class="form-control" placeholder="Duration (min)" type="number" min="0" @bind="NewArtist.SetDurationMinutes" />
+                                </div>
+                            </div>
+                        </div> *@
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button class="btn btn-success" @onclick="SaveArtist">Save Artist</button>
                             </div>
                         </div>
                     </div>
@@ -111,14 +146,19 @@
     [Parameter] public EventCallback OnArtistChange { get; set; }
     [Parameter] public Func<string, List<string>>? GetConflictMessage { get; set; }
     [Parameter] public EventCallback OnDeleteStage { get; set; }
-    [Parameter] public DateTime? FestivalStartDate { get; set; }
+    [Parameter] public DateTime FestivalStartDate { get; set; } = DateTime.Now;
+
+    [Inject] private IJSRuntime JS { get; set; }
 
     private Artist NewArtist = new();
 
     protected override void OnParametersSet()
     {
         // Set default artist time when modal opens
-        NewArtist.SetTimeStart = FestivalStartDate ?? DateTime.Now;        
+        NewArtist = new()
+        {
+            SetTimeStart = FestivalStartDate
+        };
     }
 
     private void EditArtist(string id)
@@ -126,7 +166,11 @@
         var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == id);
         if (existingArtist != null)
         {
+            existingArtist.SetTimeEnd = existingArtist.SetTimeEnd.HasValue ? existingArtist.SetTimeEnd.Value.ToLocalTime() : null;
+            existingArtist.SetTimeStart = existingArtist.SetTimeStart.ToLocalTime();
+
             NewArtist = existingArtist;
+
             StateHasChanged();
         }
     }
@@ -138,32 +182,32 @@
             return;
         }
 
-        if (NewArtist.SetDurationMinutes == 0)
-        {
-            NewArtist.SetDurationMinutes = null;
-        }
-
         var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == NewArtist.Id);
         if (existingArtist != null)
         {
+            NewArtist.SetTimeStart = NewArtist.SetTimeStart.ToUniversalTime();
+            NewArtist.SetTimeEnd = NewArtist.SetTimeEnd.HasValue ? NewArtist.SetTimeEnd.Value.ToUniversalTime() : null;
+
             existingArtist = NewArtist;
-            NewArtist = new() { SetTimeStart = FestivalStartDate ?? DateTime.Now };
-            return;
+        }
+        else
+        {
+
+            var artist = new Artist
+            {
+                Name = NewArtist.Name,
+                Description = NewArtist.Description,
+                SetTimeStart = NewArtist.SetTimeStart.ToUniversalTime(),
+                SetTimeEnd = NewArtist.SetTimeEnd.HasValue ? NewArtist.SetTimeEnd.Value.ToUniversalTime() : null,
+                SetDurationMinutes = NewArtist.SetDurationMinutes
+            };
+
+            Stage.Artists.Add(artist);
         }
 
-        var artist = new Artist
-        {
-            Name = NewArtist.Name,
-            Description = NewArtist.Description,
-            SetTimeStart = NewArtist.SetTimeStart.ToUniversalTime(),
-            SetTimeEnd = NewArtist.SetDurationMinutes.HasValue ? NewArtist.SetTimeStart.AddMinutes(NewArtist.SetDurationMinutes.Value).ToUniversalTime() : null,
-            SetDurationMinutes = NewArtist.SetDurationMinutes
-        };
+        NewArtist = new() { SetTimeStart = FestivalStartDate };
 
-        Stage.Artists.Add(artist);
-
-        NewArtist = new() { SetTimeStart = FestivalStartDate ?? DateTime.Now };
-
+        StateHasChanged();
         await OnArtistChange.InvokeAsync(null);
     }
 

@@ -11,7 +11,7 @@ namespace FestivalMapper.App.Models
         public string FestivalName { get; set; }
         public string Description { get; set; }
         public string FestivalMapBase64 { get; set; }
-        public DateTime? FestivalStartDate { get; set; }
+        public DateTime FestivalStartDate { get; set; } = DateTime.Now;
         public List<Stage> Stages { get; set; } = new List<Stage>();
 
     }
@@ -25,7 +25,7 @@ namespace FestivalMapper.App.Models
         public string StageColor { get; set; }
         public string StageBg { get
             {
-                return $"{StageColor}aa";
+                return $"{StageColor}bf";
             } 
         }
         public List<Artist> Artists { get; set; } = new List<Artist>();
