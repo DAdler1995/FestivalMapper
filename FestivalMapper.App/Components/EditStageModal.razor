@@ -155,6 +155,26 @@
     private DateTime ArtistStartTimeLocal;
     private DateTime? ArtistEndTimeLocal;
 
+    @code {
+        protected override void OnAfterRender(bool firstRender)
+        {
+#if ANDROID
+        if (IsVisible)
+        {
+            FestivalMapper.App.Platforms.Android.BackHandler.OnBackPressedOverride = () =>
+            {
+                IsVisible = false;
+                StateHasChanged();
+            };
+        }
+        else
+        {
+            FestivalMapper.App.Platforms.Android.BackHandler.OnBackPressedOverride = null;
+        }
+#endif
+        }
+    }
+
 
     private void ResetNewArtist()
     {
