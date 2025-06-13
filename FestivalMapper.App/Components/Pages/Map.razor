@@ -6,13 +6,14 @@
 
 @inject ImagePickerService ImagePickerService
 @inject MapStorageService MapStorageService
+@inject NavigationManager NavigationManager
 
-@page "/"
+@page "/map/{FileName}"
 @page "/map"
 
 <PageTitle>Festival Map</PageTitle>
 
-<div class="container-fluid mb-3">
+@* <div class="container-fluid mb-3">
 	<div class="row">
 		<div class="col-md-4">
 			<button class="btn btn-outline-primary" @onclick="ImportMapFromFile">📂 Import Map</button>
@@ -37,7 +38,7 @@
         }
     </ul>
 	<hr />
-}
+} *@
 
 <div class="container-fluid">
 	@if (!string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
@@ -136,13 +137,13 @@
 
 
 @code {
+	[Parameter]
+	public string? FileName { get; set; }
 
 	private FestivalMap FestivalMap = new()
 	{
 		Stages = new List<Stage>()
 	};
-
-	private List<FestivalMap> SavedMaps = new();
 
 	private Dictionary<string, List<(string ArtistName, string StageId)>> ConflictDetails = new();
 
@@ -162,7 +163,28 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		await LoadMaps();
+		if (string.IsNullOrEmpty(this.FileName))
+		{
+			FestivalMap = new() { Stages = new List<Stage>() };
+			await PickImage();
+
+			if (string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
+			{
+				// no image selected, redirect back to home
+				NavigationManager.NavigateTo("/");
+			}
+			return;
+		}
+
+		var loadedFestivalMap = await MapStorageService.GetFestivalMapAsync(this.FileName);
+		if (loadedFestivalMap == null)
+		{
+			// redirect back to the home page if the festival map cannot be loaded
+			NavigationManager.NavigateTo("/");
+			return;
+		}
+
+		FestivalMap = loadedFestivalMap;
 	}
 
 	private async Task AutoSaveAsync()
@@ -200,56 +222,15 @@
 		await AutoSaveAsync();
 	}
 
-	private async Task ImportMapFromFile()
-	{
-		try
-		{
-			var file = await FilePicker.Default.PickAsync(new PickOptions
-			{
-				PickerTitle = "Select Festival Map",
-				FileTypes = FileTypeHelper.FestivalMap
-			});
-
-			if (file != null)
-			{
-				FestivalMap? importedFestivalMap = await MapStorageService.ImportMapAsync(file);
-				if (importedFestivalMap != null)
-				{
-					LoadSelectedMap(importedFestivalMap);
-				}
-
-				await LoadMaps();
-			}
-		}
-		catch (Exception)
-		{
-
-		}
-	}
-
 	private async Task SaveCurrentMap()
 	{
 		if (!string.IsNullOrEmpty(FestivalMap.FestivalName))
 		{
 			await MapStorageService.SaveMapAsync(FestivalMap);
-			await LoadMaps();
 		}
 	}
 
-	private async Task LoadMaps()
-	{
-		SavedMaps = await MapStorageService.LoadAllMapsAsync();
-	}
-
-	private Task LoadSelectedMap(FestivalMap map)
-	{
-		map.FestivalStartDate = map.FestivalStartDate.ToLocalTime();
-
-		FestivalMap = map;
-		DetectScheduleConflicts();
-		return Task.CompletedTask;
-	}
-
+	// might still be wanted/needed
 	private async Task DeleteMap(FestivalMap map)
 	{
 		if (FestivalMap == map)
@@ -258,7 +239,6 @@
 		}
 
 		await MapStorageService.DeleteMapAsync(map.FestivalName);
-		await LoadMaps();
 
 		StateHasChanged();
 	}

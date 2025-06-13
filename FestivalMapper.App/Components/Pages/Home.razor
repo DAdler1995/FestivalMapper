@@ -1,0 +1,101 @@
+﻿@using FestivalMapper.App.Services
+@using FestivalMapper.App.Models
+@using FestivalMapper.App.Libraries
+
+@inject MapStorageService MapStorageService
+@inject NavigationManager NavigationManager
+
+@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<div class="container-fluid mb-3">
+    <div class="row">
+        <div class="col-md-6">
+            <button class="btn btn-outline-primary" @onclick="ImportMapFromFile">📂 Import Map</button>
+        </div>
+        <div class="col-md-6">
+			<button class="btn btn-primary" @onclick="CreateNewMap">Create New Map</button>
+        </div>
+    </div>
+</div>
+
+@if (SavedMaps.Any())
+{
+    <h6>Saved Maps</h6>
+    <ul class="list-group">
+        @foreach (var savedMap in SavedMaps)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@savedMap.FestivalName</span>
+                <button class="btn btn-sm btn-outline-primary" @onclick="() => LoadSelectedMap(savedMap)">Load</button>
+                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMap(savedMap)">🗑️</button>
+            </li>
+        }
+    </ul>
+    <hr />
+}
+
+@code {
+	private List<FestivalMap> SavedMaps = new();
+
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadMaps();
+	}
+
+
+	private void CreateNewMap()
+	{
+		NavigationManager.NavigateTo($"/Map");
+	}
+
+	private void LoadSelectedMap(FestivalMap map)
+	{
+		NavigationManager.NavigateTo($"/Map/{map.FestivalName}");
+	}
+
+	private async Task DeleteMap(FestivalMap map)
+	{
+		await MapStorageService.DeleteMapAsync(map.FestivalName);
+		await LoadMaps();
+
+		StateHasChanged();
+	}
+
+	private async Task LoadMaps()
+	{
+		SavedMaps = await MapStorageService.LoadAllMapsAsync();
+	}
+
+	private async Task ImportMapFromFile()
+	{
+		try
+		{
+			var file = await FilePicker.Default.PickAsync(new PickOptions
+			{
+				PickerTitle = "Select Festival Map",
+				FileTypes = FileTypeHelper.FestivalMap
+			});
+
+			if (file != null)
+			{
+				FestivalMap? importedFestivalMap = await MapStorageService.ImportMapAsync(file);
+				if (importedFestivalMap != null)
+				{
+					// todo: redirect to Map.razor with the imported map
+					//LoadSelectedMap(importedFestivalMap);
+				}
+
+				//await LoadMaps();
+			}
+		}
+		catch (Exception)
+		{
+
+		}
+	}
+
+}

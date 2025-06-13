@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static Microsoft.Maui.ApplicationModel.Permissions;
 
 namespace FestivalMapper.App.Services
 {
@@ -59,6 +60,29 @@ namespace FestivalMapper.App.Services
             }
 
             return maps;
+        }
+
+        public async Task<FestivalMap?> GetFestivalMapAsync(string fileName)
+        {
+            var fileNameSafe = string.Join("_", fileName.Split(Path.GetInvalidFileNameChars()));
+            var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
+
+            if (File.Exists(filePath))
+            {
+                var json = await File.ReadAllTextAsync(filePath);
+                try
+                {
+                    var map = JsonSerializer.Deserialize<FestivalMap>(json);
+                    return map;
+                }
+                catch
+                {
+                    // do nothing with invalid maps currently
+                }
+            }
+
+            return null;
+
         }
 
         public async Task DeleteMapAsync(string festivalName)
