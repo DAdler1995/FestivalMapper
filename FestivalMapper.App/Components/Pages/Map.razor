@@ -13,33 +13,6 @@
 
 <PageTitle>Festival Map</PageTitle>
 
-@* <div class="container-fluid mb-3">
-	<div class="row">
-		<div class="col-md-4">
-			<button class="btn btn-outline-primary" @onclick="ImportMapFromFile">📂 Import Map</button>
-		</div>
-		<div class="col-md-4">
-			<button class="btn btn-primary" @onclick="PickImage">Pick Image</button>
-		</div>
-	</div>
-</div>
-
-@if (SavedMaps.Any())
-{
-    <h6>Saved Maps</h6>
-    <ul class="list-group">
-        @foreach (var savedMap in SavedMaps)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@savedMap.FestivalName</span>
-                <button class="btn btn-sm btn-outline-primary" @onclick="() => LoadSelectedMap(savedMap)">Load</button>
-                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMap(savedMap)">🗑️</button>
-            </li>
-        }
-    </ul>
-	<hr />
-} *@
-
 <div class="container-fluid">
 	@if (!string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
 	{
@@ -57,9 +30,6 @@
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Start Date</span>
 				<input  @bind="FestivalMap.FestivalStartDate" class="form-control" type="date" aria-label="Festival Start Date" />
-			</div>
-			<div class="d-flex gap-2 mb-3">
-				<button class="btn btn-success" @onclick="SaveCurrentMap">💾 Save Map</button>
 			</div>
 		</div>
 
