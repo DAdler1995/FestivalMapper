@@ -19,12 +19,12 @@
 		<div class="row">
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Name</span>
-				<input value="@FestivalMap.FestivalName" @oninput="TriggerAutoSave" class="form-control" />
+				<input @bind="FestivalMap.FestivalName" @onblur="TriggerAutoSave" class="form-control" />
 			</div>
 
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Start Date</span>
-				<input value="@FestivalMap.FestivalStartDate" @oninput="TriggerAutoSave" type="date" class="form-control" />
+				<input @bind="FestivalMap.FestivalStartDate" @onblur="TriggerAutoSave" type="date" class="form-control" />
 			</div>
 		</div>
 
