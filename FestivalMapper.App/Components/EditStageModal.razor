@@ -35,27 +35,31 @@
                         <hr />
 
                         <h6>Artists</h6>
-                            @foreach (var artist in Stage.Artists.OrderBy(a => a.SetTimeStart))
-                            {
+                        <Virtualize Items="SortedArtists" Context="artist">
+                            <div class="mb-3 w-100" @onclick="() => EditArtist(artist.Id)">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-fill">
+                                        <strong class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
 
-                                <div class="mb-3 w-100" @onclick="() => EditArtist(artist.Id)">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="flex-fill">
-                                            <strong class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
-                                            <button class="btn btn-sm btn-danger float-end" @onclick="() => RemoveArtist(artist.Id)">🗑️</button>
-                                            <br />
-                                                <small>
-                                                    @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.HasValue? artist.SetTimeEnd.Value.ToLocalTime().ToString("t") : "NO END TIME")
-                                                </small>
+                                        <button class="btn btn-sm btn-danger float-end"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => RemoveArtist(artist.Id)">
+                                            🗑️
+                                        </button>
 
-                                            @foreach (var conflictMessage in GetConflictMessage.Invoke(artist.Id))
-                                            {
-                                                <p style="font-size: 75%" class="text-danger m-0 p-0">@conflictMessage</p>
-                                            }
-                                        </div>
+                                        <br />
+                                        <small>
+                                            @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.ToLocalTime().ToString("t"))
+                                        </small>
+
+                                        @foreach (var conflictMessage in GetConflictMessage.Invoke(artist.Id))
+                                        {
+                                            <p style="font-size: 75%" class="text-danger m-0 p-0">@conflictMessage</p>
+                                        }
                                     </div>
                                 </div>
-                            }
+                            </div>
+                        </Virtualize>
 
                         <hr />
 
@@ -73,7 +77,8 @@
                             <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text">Set Start Time</span>
-                                    <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="ArtistStartTimeLocal" />
+                                    @* <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="ArtistStartTimeLocal" @onkeyup="async _ => UpdateEndTime()" @onblur="async _ => UpdateEndTime()" /> *@
+                                    <InputDate Type="InputDateType.DateTimeLocal" TValue="DateTime" class="form-control" Value="ArtistStartTimeLocal" ValueExpression="() => ArtistStartTimeLocal" ValueChanged="(value) => UpdateEndTime(value)"></InputDate>
                                 </div>
                             </div>
                         </div>
@@ -82,7 +87,8 @@
                             <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text">Set End Time</span>
-                                    <input class="form-control" placeholder="End Time" type="datetime-local" @bind="ArtistEndTimeLocal" />
+                                    @* <input class="form-control" placeholder="End Time" type="datetime-local" @bind="ArtistEndTimeLocal" /> *@
+                                    <InputDate class="form-control" Type="InputDateType.DateTimeLocal" TValue="DateTime" Value="ArtistEndTimeLocal" ValueExpression="() => ArtistEndTimeLocal"></InputDate>
                                 </div>
                             </div>
                         </div>
@@ -116,7 +122,10 @@
 
     private Artist NewArtist = new();
     private DateTime ArtistStartTimeLocal;
-    private DateTime? ArtistEndTimeLocal;
+    private DateTime ArtistEndTimeLocal;
+
+    private List<Artist> SortedArtists => Stage.Artists.OrderBy(a => a.SetTimeStart).ToList();
+
 
     @code {
         protected override void OnAfterRender(bool firstRender)
@@ -158,13 +167,22 @@
         StateHasChanged();
     }
 
+    private void UpdateEndTime(DateTime newStartTime)
+    {
+        if (NewArtist != null)
+        {
+            ArtistStartTimeLocal = newStartTime;
+            ArtistEndTimeLocal = newStartTime.AddHours(1);
+        }
+    }
+
     private void EditArtist(string id)
     {
         var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == id);
         if (existingArtist != null)
         {
             ArtistStartTimeLocal = existingArtist.SetTimeStart.ToLocalTime();
-            ArtistEndTimeLocal = existingArtist.SetTimeEnd?.ToLocalTime();
+            ArtistEndTimeLocal = existingArtist.SetTimeEnd.ToLocalTime();
 
             // existingArtist.SetTimeEnd = existingArtist.SetTimeEnd?.ToLocalTime();
             // existingArtist.SetTimeStart = existingArtist.SetTimeStart.ToLocalTime();
@@ -184,7 +202,7 @@
         if (existingArtist != null)
         {
             existingArtist.SetTimeStart = DateTime.SpecifyKind(ArtistStartTimeLocal, DateTimeKind.Local).ToUniversalTime();
-            existingArtist.SetTimeEnd = ArtistEndTimeLocal.HasValue ? DateTime.SpecifyKind(ArtistEndTimeLocal.Value, DateTimeKind.Local).ToUniversalTime() : null;
+            existingArtist.SetTimeEnd = DateTime.SpecifyKind(ArtistEndTimeLocal, DateTimeKind.Local).ToUniversalTime(); ;
 
             existingArtist = NewArtist;
         }
@@ -195,7 +213,7 @@
             {
                 Name = NewArtist.Name,
                 SetTimeStart = NewArtist.SetTimeStart.ToUniversalTime(),
-                SetTimeEnd = NewArtist.SetTimeEnd.HasValue ? NewArtist.SetTimeEnd.Value.ToUniversalTime() : null,
+                SetTimeEnd = NewArtist.SetTimeEnd.ToUniversalTime(),
                 SetDurationMinutes = NewArtist.SetDurationMinutes
             };
 

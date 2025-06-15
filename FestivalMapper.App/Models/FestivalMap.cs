@@ -34,7 +34,7 @@ namespace FestivalMapper.App.Models
         public string Id { get; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
         public DateTime SetTimeStart { get; set; }
-        public DateTime? SetTimeEnd { get; set; }
+        public DateTime SetTimeEnd { get; set; }
         public short? SetDurationMinutes { get; set; }
     }
 }
