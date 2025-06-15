@@ -52,18 +52,10 @@
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
       <AndroidPackageFormat>apk</AndroidPackageFormat>
       <ApplicationTitle>Festival Mapper</ApplicationTitle>
-      <AndroidKeyStore>False</AndroidKeyStore>
-      <AndroidSigningStorePass>7D8BUR61QH4284e7IQuY</AndroidSigningStorePass>
-      <AndroidSigningKeyAlias>Dakota Adler</AndroidSigningKeyAlias>
-      <AndroidSigningKeyPass>!QAZ2wsx</AndroidSigningKeyPass>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
       <ApplicationTitle>Festival Mapper</ApplicationTitle>
-      <AndroidKeyStore>False</AndroidKeyStore>
-      <AndroidSigningStorePass>7D8BUR61QH4284e7IQuY</AndroidSigningStorePass>
-      <AndroidSigningKeyAlias>Dakota Adler</AndroidSigningKeyAlias>
-      <AndroidSigningKeyPass>!QAZ2wsx</AndroidSigningKeyPass>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
