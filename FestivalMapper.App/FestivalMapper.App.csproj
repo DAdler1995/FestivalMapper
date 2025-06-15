@@ -29,7 +29,7 @@
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-        <ApplicationVersion>1</ApplicationVersion>
+		<ApplicationVersion>$([System.DateTimeOffset]::Now.ToUnixTimeSeconds())</ApplicationVersion>
 
         <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
         <WindowsPackageType>None</WindowsPackageType>
@@ -46,15 +46,24 @@
 		<Company>Code Red Development</Company>
 		<Description>Plan, edit, and manage music festival maps with artist scheduling and conflict detection.</Description>
 		<PackageTags>festival,map,schedule,offline,maui</PackageTags>
+		<AndroidSigningKeyStore>FestivalMapper.keystore</AndroidSigningKeyStore>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
       <AndroidPackageFormat>apk</AndroidPackageFormat>
       <ApplicationTitle>Festival Mapper</ApplicationTitle>
+      <AndroidKeyStore>False</AndroidKeyStore>
+      <AndroidSigningStorePass>7D8BUR61QH4284e7IQuY</AndroidSigningStorePass>
+      <AndroidSigningKeyAlias>Dakota Adler</AndroidSigningKeyAlias>
+      <AndroidSigningKeyPass>!QAZ2wsx</AndroidSigningKeyPass>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
       <ApplicationTitle>Festival Mapper</ApplicationTitle>
+      <AndroidKeyStore>False</AndroidKeyStore>
+      <AndroidSigningStorePass>7D8BUR61QH4284e7IQuY</AndroidSigningStorePass>
+      <AndroidSigningKeyAlias>Dakota Adler</AndroidSigningKeyAlias>
+      <AndroidSigningKeyPass>!QAZ2wsx</AndroidSigningKeyPass>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
