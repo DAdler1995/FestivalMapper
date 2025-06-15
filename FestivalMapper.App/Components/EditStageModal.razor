@@ -182,9 +182,6 @@
             ArtistStartTimeLocal = existingArtist.SetTimeStart.ToLocalTime();
             ArtistEndTimeLocal = existingArtist.SetTimeEnd.ToLocalTime();
 
-            // existingArtist.SetTimeEnd = existingArtist.SetTimeEnd?.ToLocalTime();
-            // existingArtist.SetTimeStart = existingArtist.SetTimeStart.ToLocalTime();
-
             NewArtist = existingArtist;
         }
     }
@@ -200,9 +197,7 @@
         if (existingArtist != null)
         {
             existingArtist.SetTimeStart = DateTime.SpecifyKind(ArtistStartTimeLocal, DateTimeKind.Local).ToUniversalTime();
-            existingArtist.SetTimeEnd = DateTime.SpecifyKind(ArtistEndTimeLocal, DateTimeKind.Local).ToUniversalTime(); ;
-
-            existingArtist = NewArtist;
+            existingArtist.SetTimeEnd = DateTime.SpecifyKind(ArtistEndTimeLocal, DateTimeKind.Local).ToUniversalTime();
         }
         else
         {
@@ -218,10 +213,10 @@
             Stage.Artists.Add(artist);
         }
 
-        ResetNewArtist();
-
         await OnArtistChange.InvokeAsync(null);
         await AutoSave.InvokeAsync(null);
+
+        ResetNewArtist();
     }
 
     private async Task RemoveArtist(string id)
