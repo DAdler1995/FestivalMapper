@@ -35,7 +35,12 @@
 
 				@foreach (var stage in FestivalMap.Stages)
 				{
-					<div class="stage d-flex justify-content-center align-items-center text-white text-center" style="top: @(stage.StageLocation.Y * MapImageHeight)px; left: @(stage.StageLocation.X * MapImageWidth)px; background-color: @stage.StageBg; border: 1px solid @stage.StageColor;">
+					<div class="stage d-flex justify-content-center align-items-center text-white text-center"
+							style="top: @(stage.StageLocation.Y * MapImageHeight)px; 
+									left: @(stage.StageLocation.X * MapImageWidth)px; 
+									background-color: @stage.StageBg; 
+									border: 1px solid @stage.StageColor;">
+
 						<span>@stage.StageName</span>
 					</div>
 				}
