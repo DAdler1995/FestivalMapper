@@ -20,9 +20,13 @@
     <ul class="list-group">
         @foreach (var savedMap in SavedMaps)
         {
-            <li class="list-group-item d-flex flex-row">
-                <div class="flex-grow-1 align-self-center" @onclick="() => LoadSelectedMap(savedMap)">@savedMap.FestivalName</div>				
-				<button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMap(savedMap)">🗑️</button>
+            <li class="list-group-item d-flex flex-row" style="cursor: pointer;" @onclick="() => LoadSelectedMap(savedMap)">
+                <div class="flex-grow-1 align-self-center">@savedMap.FestivalName</div>
+				<button class="btn btn-sm btn-outline-danger"
+						@onclick:stopPropagation="true"
+						@onclick="() => DeleteMap(savedMap)">
+					🗑️
+				</button>
             </li>
         }
     </ul>
@@ -58,8 +62,6 @@
 		{
 			await MapStorageService.DeleteMapAsync(map.FestivalName);
 			await LoadMaps();
-
-			StateHasChanged();
 		}
 	}
 
