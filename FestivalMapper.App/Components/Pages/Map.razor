@@ -19,12 +19,12 @@
 		<div class="row">
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Name</span>
-				<input @oninput="async _ => await AutoSaveAsync()" @bind="FestivalMap.FestivalName" id="FestivalTitle" type="text" class="form-control" aria-label="Festival Name" />
+				<input value="@FestivalMap.FestivalName" @oninput="TriggerAutoSave" class="form-control" />
 			</div>
 
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Start Date</span>
-				<input @bind="FestivalMap.FestivalStartDate" class="form-control" type="date" aria-label="Festival Start Date" />
+				<input value="@FestivalMap.FestivalStartDate" @oninput="TriggerAutoSave" type="date" class="form-control" />
 			</div>
 		</div>
 
@@ -55,6 +55,14 @@
             height: rect.height
         };
     };
+
+
+	let ticking = false;
+	function updateTransform() {
+		const transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+		el.style.transform = transform;
+		ticking = false;
+	}
 
 	function InitHammer()
 	{
@@ -96,6 +104,11 @@
 				if (posY < -max_pos_y) {
 					posY = -max_pos_y;
 				}
+			}
+
+			if (!ticking) {
+				window.requestAnimationFrame(updateTransform);
+				ticking = true;
 			}
 
 			//pinch
@@ -167,7 +180,7 @@
 	GetConflictMessage="GetConflictMessage" 
 	OnDeleteStage="DeleteStage" 
 	FestivalStartDate="FestivalMap.FestivalStartDate"
-	AutoSave="AutoSaveAsync"/>
+	AutoSave="TriggerAutoSave"/>
 
 
 @code {
@@ -221,6 +234,19 @@
 		FestivalMap = loadedFestivalMap;
 	}
 
+	private Timer? _saveDebounceTimer;
+	private void TriggerAutoSave()
+	{
+		_saveDebounceTimer?.Dispose();
+		_saveDebounceTimer = new Timer(async _ =>
+		{
+			await InvokeAsync(async () =>
+			{
+				await AutoSaveAsync();
+			});
+		}, null, 500, Timeout.Infinite);
+	}
+
 	private async Task AutoSaveAsync()
 	{
 		if (savePending || string.IsNullOrWhiteSpace(FestivalMap.FestivalName))
@@ -229,8 +255,6 @@
 		}
 
 		savePending = true;
-		await Task.Delay(500);
-
 		await MapStorageService.SaveMapAsync(FestivalMap);
 		savePending = false;
 	}
@@ -253,7 +277,7 @@
 			StateHasChanged();
 		}
 
-		await AutoSaveAsync();
+		TriggerAutoSave();
 	}
 
 	private async Task SaveCurrentMap()
@@ -262,19 +286,6 @@
 		{
 			await MapStorageService.SaveMapAsync(FestivalMap);
 		}
-	}
-
-	// might still be wanted/needed
-	private async Task DeleteMap(FestivalMap map)
-	{
-		if (FestivalMap == map)
-		{
-			FestivalMap = new();
-		}
-
-		await MapStorageService.DeleteMapAsync(map.FestivalName);
-
-		StateHasChanged();
 	}
 
 	private string RandomStageColor()
@@ -312,7 +323,7 @@
 		// reset conflicts
 		ConflictDetails.Clear();
 
-		var allArtists = FestivalMap.Stages.SelectMany(s => s.Artists.Where(a => a.SetTimeEnd.HasValue).Select(a => new
+		var allArtists = FestivalMap.Stages.SelectMany(s => s.Artists.Select(a => new
 		{
 			StageId = s.Id,
 			StageName = s.StageName,
@@ -370,7 +381,6 @@
 	{
 		IsEditModalVisible = false;
 		SelectedStage = null;
-		StateHasChanged();
 		return Task.CompletedTask;
 	}
 
@@ -443,7 +453,7 @@
 		FestivalMap.Stages.Add(newStage);
 		stageIdCounter++;
 
-		await AutoSaveAsync();
+		TriggerAutoSave();
 	}
 
 
