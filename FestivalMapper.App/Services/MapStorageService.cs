@@ -25,7 +25,7 @@ namespace FestivalMapper.App.Services
             // save date as UTC
             map.FestivalStartDate = map.FestivalStartDate.Date.ToUniversalTime();
 
-            var fileNameSafe = string.Join("_", map.FestivalName.Split(Path.GetInvalidFileNameChars()));
+            var fileNameSafe = string.Join("_", map.Id.Split(Path.GetInvalidFileNameChars()));
             var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
 
             var json = JsonSerializer.Serialize(map, new JsonSerializerOptions
@@ -115,7 +115,7 @@ namespace FestivalMapper.App.Services
                     return null;
                 }
 
-                var fileNameSafe = string.Join("_", map.FestivalName.Split(Path.GetInvalidFileNameChars()));
+                var fileNameSafe = string.Join("_", map.Id.Split(Path.GetInvalidFileNameChars()));
                 var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
 
                 await File.WriteAllTextAsync(filePath, json);

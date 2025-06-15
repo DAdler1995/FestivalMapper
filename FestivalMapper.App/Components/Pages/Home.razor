@@ -51,7 +51,7 @@
 
 	private void LoadSelectedMap(FestivalMap map)
 	{
-		NavigationManager.NavigateTo($"/Map/{map.FestivalName}");
+		NavigationManager.NavigateTo($"/Map/{map.Id}");
 	}
 
 	private async Task DeleteMap(FestivalMap map)

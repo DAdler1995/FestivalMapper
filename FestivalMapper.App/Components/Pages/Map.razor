@@ -8,7 +8,7 @@
 @inject MapStorageService MapStorageService
 @inject NavigationManager NavigationManager
 
-@page "/map/{FileName}"
+@page "/map/{FestivalId}"
 @page "/map"
 
 <PageTitle>Festival Map</PageTitle>
@@ -190,7 +190,7 @@
 
 @code {
 	[Parameter]
-	public string? FileName { get; set; }
+	public string? FestivalId { get; set; }
 
 	private FestivalMap FestivalMap = new()
 	{
@@ -215,9 +215,9 @@
 
 	protected override async Task OnInitializedAsync()
 	{
-		if (string.IsNullOrEmpty(this.FileName))
+		if (string.IsNullOrEmpty(this.FestivalId))
 		{
-			FestivalMap = new() { Stages = new List<Stage>() };
+			FestivalMap = new() { Id = Guid.NewGuid().ToString(), Stages = new List<Stage>() };
 			await PickImage();
 
 			if (string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
@@ -228,7 +228,7 @@
 			return;
 		}
 
-		var loadedFestivalMap = await MapStorageService.GetFestivalMapAsync(this.FileName);
+		var loadedFestivalMap = await MapStorageService.GetFestivalMapAsync(this.FestivalId);
 		if (loadedFestivalMap == null)
 		{
 			// redirect back to the home page if the festival map cannot be loaded

@@ -8,6 +8,7 @@ namespace FestivalMapper.App.Models
 {
     public class FestivalMap
     {
+        public string Id { get; set; }
         public string FestivalName { get; set; }
         public string FestivalMapBase64 { get; set; }
         public DateTime FestivalStartDate { get; set; } = DateTime.Now;
