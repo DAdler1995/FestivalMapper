@@ -83,11 +83,8 @@
 				FestivalMap? importedFestivalMap = await MapStorageService.ImportMapAsync(file);
 				if (importedFestivalMap != null)
 				{
-					// todo: redirect to Map.razor with the imported map
-					//LoadSelectedMap(importedFestivalMap);
+					NavigationManager.NavigateTo($"/Map/{importedFestivalMap.FestivalName}");
 				}
-
-				//await LoadMaps();
 			}
 		}
 		catch (Exception)
