@@ -17,10 +17,12 @@
 	@if (!string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
 	{
 		<div class="row">
-			<div class="input-group mb-3">
+			<div class="input-group">
 				<span class="input-group-text">Festival Name</span>
 				<input @bind="FestivalMap.FestivalName" @onblur="TriggerAutoSave" class="form-control" />
 			</div>
+			
+			<p class="small">@LastSaved</p>
 
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Start Date</span>
@@ -213,6 +215,8 @@
 	private int stageMarkerRadius = 25;
 	private bool savePending;
 
+	private string LastSaved;
+
 	protected override async Task OnInitializedAsync()
 	{
 		if (string.IsNullOrEmpty(this.FestivalId))
@@ -261,6 +265,10 @@
 
 		savePending = true;
 		await MapStorageService.SaveMapAsync(FestivalMap);
+
+		var saveDateTime = DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss.fff tt");
+		LastSaved = $"Last Saved: {saveDateTime}";
+
 		savePending = false;
 	}
 

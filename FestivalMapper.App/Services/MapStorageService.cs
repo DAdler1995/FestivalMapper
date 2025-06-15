@@ -85,9 +85,9 @@ namespace FestivalMapper.App.Services
 
         }
 
-        public async Task DeleteMapAsync(string festivalName)
+        public async Task DeleteMapAsync(string festivalId)
         {
-            var fileNameSafe = string.Join("_", festivalName.Split(Path.GetInvalidFileNameChars()));
+            var fileNameSafe = string.Join("_", festivalId.Split(Path.GetInvalidFileNameChars()));
             var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
 
             if (File.Exists(filePath))
