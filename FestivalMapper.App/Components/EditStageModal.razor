@@ -26,15 +26,6 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="input-group mb-3">
-                                    <span class="input-group-text">Description</span>
-                                    <textarea id="stageDesc" class="form-control" rows="3" @bind="Stage.StageDescription"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="input-group mb-3">
                                     <span class="input-group-text">Stage Color</span>
                                     <input class="form-control" type="color" @bind="Stage.StageColor"></input>
                                 </div>
@@ -56,10 +47,6 @@
                                                 <small>
                                                     @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.HasValue? artist.SetTimeEnd.Value.ToLocalTime().ToString("t") : "NO END TIME")
                                                 </small>
-                                            @if (!string.IsNullOrWhiteSpace(artist.Description))
-                                            {
-                                                <p class="mt-2 mb-0">@artist.Description</p>
-                                            }
 
                                             @foreach (var conflictMessage in GetConflictMessage.Invoke(artist.Id))
                                             {
@@ -99,30 +86,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="row mb-2">
-                            <div class="col-12">
-                                <div class="input-group">
-                                    <span class="input-group-text">Set Description</span>
-                                    <input class="form-control" placeholder="Description" @bind="NewArtist.Description" />
-                                </div>
-                            </div>
-                        </div>
-
-                        @* <div class="row mb-2">
-                            <div class="col-6">
-                                <div class="input-group">
-                                    <span class="input-group-text">Set End Time</span>
-                                    <input class="form-control" placeholder="End Time" type="time" min="0" @bind="NewArtist.SetTimeEnd" />
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="input-group">
-                                    <span class="input-group-text">Set Duration</span>
-                                    <input class="form-control" placeholder="Duration (min)" type="number" min="0" @bind="NewArtist.SetDurationMinutes" />
-                                </div>
-                            </div>
-                        </div> *@
 
                         <div class="row">
                             <div class="col-12">
@@ -231,7 +194,6 @@
             var artist = new Artist
             {
                 Name = NewArtist.Name,
-                Description = NewArtist.Description,
                 SetTimeStart = NewArtist.SetTimeStart.ToUniversalTime(),
                 SetTimeEnd = NewArtist.SetTimeEnd.HasValue ? NewArtist.SetTimeEnd.Value.ToUniversalTime() : null,
                 SetDurationMinutes = NewArtist.SetDurationMinutes

@@ -9,7 +9,6 @@ namespace FestivalMapper.App.Models
     public class FestivalMap
     {
         public string FestivalName { get; set; }
-        public string Description { get; set; }
         public string FestivalMapBase64 { get; set; }
         public DateTime FestivalStartDate { get; set; } = DateTime.Now;
         public List<Stage> Stages { get; set; } = new List<Stage>();
@@ -21,7 +20,6 @@ namespace FestivalMapper.App.Models
         public string Id { get; } = Guid.NewGuid().ToString();
         public string StageName { get; set; }
         public Point StageLocation { get; set; }
-        public string StageDescription { get; set; }
         public string StageColor { get; set; }
         public string StageBg { get
             {
@@ -35,7 +33,6 @@ namespace FestivalMapper.App.Models
     {
         public string Id { get; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
-        public string Description { get; set; }
         public DateTime SetTimeStart { get; set; }
         public DateTime? SetTimeEnd { get; set; }
         public short? SetDurationMinutes { get; set; }

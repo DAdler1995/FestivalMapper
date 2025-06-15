@@ -20,16 +20,17 @@
     <ul class="list-group">
         @foreach (var savedMap in SavedMaps)
         {
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@savedMap.FestivalName</span>
-                <button class="btn btn-sm btn-outline-primary" @onclick="() => LoadSelectedMap(savedMap)">Load</button>
-                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMap(savedMap)">🗑️</button>
+            <li class="list-group-item d-flex flex-row">
+                <div class="flex-grow-1 align-self-center" @onclick="() => LoadSelectedMap(savedMap)">@savedMap.FestivalName</div>				
+				<button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteMap(savedMap)">🗑️</button>
             </li>
         }
     </ul>
 }
 
 @code {
+	[Inject] private IJSRuntime JS { get; set; }
+
 	private List<FestivalMap> SavedMaps = new();
 
 
@@ -52,10 +53,14 @@
 
 	private async Task DeleteMap(FestivalMap map)
 	{
-		await MapStorageService.DeleteMapAsync(map.FestivalName);
-		await LoadMaps();
+		var confirm = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the \"{map.FestivalName}\" festival map?");
+		if (confirm)
+		{
+			await MapStorageService.DeleteMapAsync(map.FestivalName);
+			await LoadMaps();
 
-		StateHasChanged();
+			StateHasChanged();
+		}
 	}
 
 	private async Task LoadMaps()

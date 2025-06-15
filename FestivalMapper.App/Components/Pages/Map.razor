@@ -12,24 +12,18 @@
 @page "/map"
 
 <PageTitle>Festival Map</PageTitle>
-
 <div class="container-fluid">
 	@if (!string.IsNullOrEmpty(FestivalMap.FestivalMapBase64))
 	{
 		<div class="row">
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Name</span>
-				<input @bind="FestivalMap.FestivalName" id="FestivalTitle" type="text" class="form-control" aria-label="Festival Name" />
-			</div>
-
-			<div class="input-group mb-3">
-				<span class="input-group-text">Description</span>
-				<textarea  @bind="FestivalMap.Description" class="form-control" rows="3" aria-label="Festival Description" />
+				<input @oninput="async _ => await AutoSaveAsync()" @bind="FestivalMap.FestivalName" id="FestivalTitle" type="text" class="form-control" aria-label="Festival Name" />
 			</div>
 
 			<div class="input-group mb-3">
 				<span class="input-group-text">Festival Start Date</span>
-				<input  @bind="FestivalMap.FestivalStartDate" class="form-control" type="date" aria-label="Festival Start Date" />
+				<input @bind="FestivalMap.FestivalStartDate" class="form-control" type="date" aria-label="Festival Start Date" />
 			</div>
 		</div>
 
