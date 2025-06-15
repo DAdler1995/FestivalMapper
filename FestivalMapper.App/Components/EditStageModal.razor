@@ -77,7 +77,6 @@
                             <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text">Set Start Time</span>
-                                    @* <input class="form-control" placeholder="Start Time" type="datetime-local" @bind="ArtistStartTimeLocal" @onkeyup="async _ => UpdateEndTime()" @onblur="async _ => UpdateEndTime()" /> *@
                                     <InputDate Type="InputDateType.DateTimeLocal" TValue="DateTime" class="form-control" Value="ArtistStartTimeLocal" ValueExpression="() => ArtistStartTimeLocal" ValueChanged="(value) => UpdateEndTime(value)"></InputDate>
                                 </div>
                             </div>
@@ -87,7 +86,6 @@
                             <div class="col-12">
                                 <div class="input-group">
                                     <span class="input-group-text">Set End Time</span>
-                                    @* <input class="form-control" placeholder="End Time" type="datetime-local" @bind="ArtistEndTimeLocal" /> *@
                                     <InputDate class="form-control" Type="InputDateType.DateTimeLocal" TValue="DateTime" Value="ArtistEndTimeLocal" ValueExpression="() => ArtistEndTimeLocal"></InputDate>
                                 </div>
                             </div>
