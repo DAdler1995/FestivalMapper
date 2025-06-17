@@ -182,9 +182,7 @@
 	Stage="@SelectedStage" 
 	OnClose="@CloseEditModal" 
 	OnSave="@SaveStageChanges" 
-	IsArtistConflicting="@IsArtistConflicting" 
 	OnArtistChange="@DetectScheduleConflicts" 
-	GetConflictMessage="GetConflictMessage" 
 	OnDeleteStage="DeleteStage" 
 	FestivalStartDate="FestivalMap.FestivalStartDate"
 	AutoSave="TriggerAutoSave"/>
@@ -198,8 +196,6 @@
 	{
 		Stages = new List<Stage>()
 	};
-
-	private Dictionary<string, List<(string ArtistName, string StageId)>> ConflictDetails = new();
 
 	private ElementReference MapImageRef;
 	private ElementReference MapContainerRef;
@@ -241,6 +237,7 @@
 		}
 
 		FestivalMap = loadedFestivalMap;
+		DetectScheduleConflicts();
 	}
 
 	private Timer? _saveDebounceTimer;
@@ -309,33 +306,13 @@
 		return color;
 	}
 
-	private bool IsArtistConflicting(string artistId)
-	{
-		return ConflictDetails.ContainsKey(artistId);
-	}
-
 	private string GetStageName(string stageId)
 	{
 		return FestivalMap.Stages.FirstOrDefault(x => x.Id == stageId).StageName;
 	}
 
-	private List<string> GetConflictMessage(string artistId)
-	{
-		if (!ConflictDetails.TryGetValue(artistId, out var conflicts) || conflicts.Count == 0)
-			return new List<string>();
-
-		var messages = conflicts
-			.Select(c => $"Conflict with {c.ArtistName} at {GetStageName(c.StageId)}")
-			.ToList();
-
-		return messages;
-	}
-
 	private void DetectScheduleConflicts()
 	{
-		// reset conflicts
-		ConflictDetails.Clear();
-
 		var allArtists = FestivalMap.Stages.SelectMany(s => s.Artists.Select(a => new
 		{
 			StageId = s.Id,
@@ -365,18 +342,31 @@
 
 				if (overlaps)
 				{
-					if (!ConflictDetails.ContainsKey(a1.Artist.Id))
+					var a1Conflict = new Conflict
 					{
-						ConflictDetails[a1.Artist.Id] = new();
+						ArtistName = a2.Artist.Name,
+						ArtistSetStartUtc = a2.Artist.SetTimeStart,
+						ArtistSetEndUtc = a2.Artist.SetTimeEnd,
+						StageName = a2.StageName
+					};
+
+					var a2Conflict = new Conflict
+					{
+						ArtistName = a1.Artist.Name,
+						ArtistSetStartUtc = a1.Artist.SetTimeStart,
+						ArtistSetEndUtc = a1.Artist.SetTimeEnd,
+						StageName = a1.StageName
+					};
+
+					if (!a1.Artist.ConflictingSets.Contains(a1Conflict))
+					{
+						a1.Artist.ConflictingSets.Add(a1Conflict);
 					}
 
-					if (!ConflictDetails.ContainsKey(a2.Artist.Id))
+					if (!a2.Artist.ConflictingSets.Contains(a2Conflict))
 					{
-						ConflictDetails[a2.Artist.Id] = new();
+						a2.Artist.ConflictingSets.Add(a2Conflict);
 					}
-
-					ConflictDetails[a1.Artist.Id].Add((a2.Artist.Name, a2.StageId));
-					ConflictDetails[a2.Artist.Id].Add((a1.Artist.Name, a1.StageId));
 				}
 			}
 		}
