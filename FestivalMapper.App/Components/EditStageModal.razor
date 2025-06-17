@@ -148,10 +148,10 @@
 
     private void ResetNewArtist()
     {
-        ArtistStartTimeLocal = FestivalStartDate;
-        ArtistEndTimeLocal = FestivalStartDate;
+    ArtistStartTimeLocal = FestivalStartDate;
+    ArtistEndTimeLocal = FestivalStartDate;
 
-        NewArtist = new()
+    NewArtist = new()
         {
             SetTimeStart = FestivalStartDate,
             SetTimeEnd = FestivalStartDate
@@ -160,30 +160,30 @@
 
     protected override void OnParametersSet()
     {
-        // Set default artist time when modal opens
-        ResetNewArtist();
-        StateHasChanged();
+    // Set default artist time when modal opens
+    ResetNewArtist();
+    StateHasChanged();
     }
 
     private void UpdateEndTime(DateTime newStartTime)
     {
-        if (NewArtist != null)
-        {
-            ArtistStartTimeLocal = newStartTime;
-            ArtistEndTimeLocal = newStartTime.AddHours(1);
-        }
+    if (NewArtist != null)
+    {
+        ArtistStartTimeLocal = newStartTime;
+        ArtistEndTimeLocal = newStartTime.AddHours(1);
+    }
     }
 
     private void EditArtist(string id)
     {
-        var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == id);
-        if (existingArtist != null)
-        {
-            ArtistStartTimeLocal = existingArtist.SetTimeStart.ToLocalTime();
-            ArtistEndTimeLocal = existingArtist.SetTimeEnd.ToLocalTime();
+    var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == id);
+    if (existingArtist != null)
+    {
+        ArtistStartTimeLocal = existingArtist.SetTimeStart.ToLocalTime();
+        ArtistEndTimeLocal = existingArtist.SetTimeEnd.ToLocalTime();
 
-            NewArtist = existingArtist;
-        }
+        NewArtist = existingArtist;
+    }
     }
 
     private async Task SaveArtist()
@@ -193,11 +193,14 @@
             return;
         }
 
+        var startTimeUtc = ArtistStartTimeLocal.ToUniversalTime();
+        var endTimeUtc = ArtistEndTimeLocal.ToUniversalTime();
+
         var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == NewArtist.Id);
         if (existingArtist != null)
         {
-            existingArtist.SetTimeStart = DateTime.SpecifyKind(ArtistStartTimeLocal, DateTimeKind.Local).ToUniversalTime();
-            existingArtist.SetTimeEnd = DateTime.SpecifyKind(ArtistEndTimeLocal, DateTimeKind.Local).ToUniversalTime();
+            existingArtist.SetTimeStart = startTimeUtc;
+            existingArtist.SetTimeEnd = endTimeUtc;
         }
         else
         {
@@ -205,8 +208,8 @@
             var artist = new Artist
             {
                 Name = NewArtist.Name,
-                SetTimeStart = NewArtist.SetTimeStart.ToUniversalTime(),
-                SetTimeEnd = NewArtist.SetTimeEnd.ToUniversalTime(),
+                SetTimeStart = startTimeUtc,
+                SetTimeEnd = endTimeUtc,
                 SetDurationMinutes = NewArtist.SetDurationMinutes
             };
 
