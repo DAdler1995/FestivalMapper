@@ -1,0 +1,123 @@
+﻿@using FestivalMapper.App.Models
+
+@inject IJSRuntime JS
+
+@if (ShowModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Artist</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text">Artist Name</span>
+                                    <input class="form-control" placeholder="Name" @bind="Artist.Name" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text">Set Start Time</span>
+                                    <InputDate Type="InputDateType.DateTimeLocal" TValue="DateTime" class="form-control" Value="ArtistStartTimeLocal" ValueExpression="() => ArtistStartTimeLocal" ValueChanged="(value) => UpdateEndTime(value)"></InputDate>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-12">
+                                <div class="input-group">
+                                    <span class="input-group-text">Set End Time</span>
+                                    <InputDate class="form-control" Type="InputDateType.DateTimeLocal" TValue="DateTime" Value="ArtistEndTimeLocal" ValueExpression="() => ArtistEndTimeLocal"></InputDate>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button class="btn btn-success" @onclick="SaveArtist">Save Artist</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    <button type="button" class="btn btn-primary" @onclick="CloseModal">Save changes</button>
+                </div> *@
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool ShowModal { get; set; }
+    [Parameter] public Stage Stage { get; set; }
+    [Parameter] public Artist Artist { get; set; }
+    [Parameter] public DateTime FestivalStartDate { get; set; } = DateTime.Now;
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private DateTime ArtistStartTimeLocal;
+    private DateTime ArtistEndTimeLocal;
+
+    private async Task CloseModal()
+    {
+        await OnClose.InvokeAsync(null);
+    }
+
+    private async Task SaveArtist()
+    {
+        if (string.IsNullOrWhiteSpace(Artist?.Name))
+        {
+            return;
+        }
+
+        var startTimeUtc = ArtistStartTimeLocal.ToUniversalTime();
+        var endTimeUtc = ArtistEndTimeLocal.ToUniversalTime();
+
+        //var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == NewArtist.Id);
+        if (Artist != null)
+        {
+            Artist.SetTimeStart = startTimeUtc;
+            Artist.SetTimeEnd = endTimeUtc;
+        }
+        else
+        {
+            Artist.SetTimeStart = startTimeUtc;
+            Artist.SetTimeEnd = endTimeUtc;
+
+            Stage.Artists.Add(Artist);
+        }
+
+        ResetNewArtist();
+    }
+
+    private void ResetNewArtist()
+    {
+        ArtistStartTimeLocal = FestivalStartDate;
+        ArtistEndTimeLocal = FestivalStartDate;
+
+        Artist = new()
+        {
+            SetTimeStart = FestivalStartDate,
+            SetTimeEnd = FestivalStartDate
+        };
+    }
+
+
+    private void UpdateEndTime(DateTime newStartTime)
+    {
+        if (Artist != null)
+        {
+            ArtistStartTimeLocal = newStartTime;
+            ArtistEndTimeLocal = newStartTime.AddHours(1);
+        }
+    }
+}
