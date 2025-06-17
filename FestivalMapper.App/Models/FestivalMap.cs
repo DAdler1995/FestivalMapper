@@ -37,5 +37,7 @@ namespace FestivalMapper.App.Models
         public DateTime SetTimeStart { get; set; }
         public DateTime SetTimeEnd { get; set; }
         public short? SetDurationMinutes { get; set; }
+        public List<string> Conflicts { get; set; } = new List<string>();
     }
+
 }

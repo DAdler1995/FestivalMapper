@@ -1,5 +1,6 @@
 ﻿@using System 
 @using System.IO
+@using FestivalMapper.App.Components.Modals
 @using FestivalMapper.App.Services
 @using FestivalMapper.App.Models
 @using FestivalMapper.App.Libraries
@@ -177,17 +178,13 @@
 	}
 </style>
 
-<EditStageModal 
-	IsVisible="@IsEditModalVisible" 
-	Stage="@SelectedStage" 
-	OnClose="@CloseEditModal" 
-	OnSave="@SaveStageChanges" 
-	IsArtistConflicting="@IsArtistConflicting" 
-	OnArtistChange="@DetectScheduleConflicts" 
-	GetConflictMessage="GetConflictMessage" 
-	OnDeleteStage="DeleteStage" 
+<StageModal 
+	ShowModal="ShowEditStageModal"
+	Stage="SelectedStage"
 	FestivalStartDate="FestivalMap.FestivalStartDate"
-	AutoSave="TriggerAutoSave"/>
+	OnClose="SaveAndCloseStageModal"
+	OnDeleteStage="DeleteStage"
+	AutoSave="TriggerAutoSave" />
 
 
 @code {
@@ -199,8 +196,6 @@
 		Stages = new List<Stage>()
 	};
 
-	private Dictionary<string, List<(string ArtistName, string StageId)>> ConflictDetails = new();
-
 	private ElementReference MapImageRef;
 	private ElementReference MapContainerRef;
 
@@ -209,7 +204,7 @@
 
 	private int stageIdCounter = 1;
 
-	private bool IsEditModalVisible = false;
+	private bool ShowEditStageModal = false;
 	private Stage? SelectedStage;
 
 	private int stageMarkerRadius = 25;
@@ -241,6 +236,7 @@
 		}
 
 		FestivalMap = loadedFestivalMap;
+		DetectScheduleConflicts();
 	}
 
 	private Timer? _saveDebounceTimer;
@@ -258,6 +254,8 @@
 
 	private async Task AutoSaveAsync()
 	{
+		DetectScheduleConflicts();
+
 		if (savePending || string.IsNullOrWhiteSpace(FestivalMap.FestivalName))
 		{
 			return;
@@ -280,7 +278,7 @@
 			FestivalMap.Stages.Remove(SelectedStage);
 
 			SelectedStage = null;
-			IsEditModalVisible = false;
+			ShowEditStageModal = false;
 			DetectScheduleConflicts();
 		}
 
@@ -309,32 +307,23 @@
 		return color;
 	}
 
-	private bool IsArtistConflicting(string artistId)
-	{
-		return ConflictDetails.ContainsKey(artistId);
-	}
-
 	private string GetStageName(string stageId)
 	{
 		return FestivalMap.Stages.FirstOrDefault(x => x.Id == stageId).StageName;
 	}
 
-	private List<string> GetConflictMessage(string artistId)
+	private void ResetAllConflicts()
 	{
-		if (!ConflictDetails.TryGetValue(artistId, out var conflicts) || conflicts.Count == 0)
-			return new List<string>();
-
-		var messages = conflicts
-			.Select(c => $"Conflict with {c.ArtistName} at {GetStageName(c.StageId)}")
-			.ToList();
-
-		return messages;
+		var allArtist = FestivalMap.Stages.SelectMany(x => x.Artists).ToList();
+		foreach (var artist in allArtist)
+		{
+			artist.Conflicts = new List<string>();
+		}
 	}
 
 	private void DetectScheduleConflicts()
 	{
-		// reset conflicts
-		ConflictDetails.Clear();
+		ResetAllConflicts();
 
 		var allArtists = FestivalMap.Stages.SelectMany(s => s.Artists.Select(a => new
 		{
@@ -365,21 +354,22 @@
 
 				if (overlaps)
 				{
-					if (!ConflictDetails.ContainsKey(a1.Artist.Id))
+					var a1ConflictMessage = $"CONFLICT: {a2.Artist.Name} ({a2.StageName}) at {a2.Artist.SetTimeStart.ToLocalTime().ToString("t")} - {a2.Artist.SetTimeEnd.ToLocalTime().ToString("t")}";
+					if (!a1.Artist.Conflicts.Contains(a1ConflictMessage))
 					{
-						ConflictDetails[a1.Artist.Id] = new();
+						a1.Artist.Conflicts.Add(a1ConflictMessage);
 					}
 
-					if (!ConflictDetails.ContainsKey(a2.Artist.Id))
+					var a2ConflictMessage = $"CONFLICT: {a1.Artist.Name} ({a1.StageName}) at {a1.Artist.SetTimeStart.ToLocalTime().ToString("t")} - {a1.Artist.SetTimeEnd.ToLocalTime().ToString("t")}";
+					if (!a2.Artist.Conflicts.Contains(a2ConflictMessage))
 					{
-						ConflictDetails[a2.Artist.Id] = new();
+						a2.Artist.Conflicts.Add(a2ConflictMessage);
 					}
-
-					ConflictDetails[a1.Artist.Id].Add((a2.Artist.Name, a2.StageId));
-					ConflictDetails[a2.Artist.Id].Add((a1.Artist.Name, a1.StageId));
 				}
 			}
 		}
+
+		StateHasChanged();
 	}
 
 
@@ -390,17 +380,19 @@
 		MapImageHeight = size.Height;
 	}
 
-	private Task CloseEditModal()
+	private Task SaveAndCloseStageModal()
 	{
-		IsEditModalVisible = false;
+		ShowEditStageModal = false;
 		SelectedStage = null;
+		TriggerAutoSave();
+
 		return Task.CompletedTask;
 	}
 
 	private async Task SaveStageChanges()
 	{
 		// All data is bound to the selected stage, so we just close
-		IsEditModalVisible = false;
+		ShowEditStageModal = false;
 		SelectedStage = null;
 		await SaveCurrentMap();
 	}
@@ -410,7 +402,7 @@
 		SelectedStage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
 		if (SelectedStage != null)
 		{
-			IsEditModalVisible = true;
+			ShowEditStageModal = true;
 		}		
 	}
 

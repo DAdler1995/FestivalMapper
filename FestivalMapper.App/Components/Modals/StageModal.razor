@@ -1,0 +1,210 @@
+﻿@using FestivalMapper.App.Models
+
+@inject IJSRuntime JS
+
+@if (ShowModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Stage</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Stage Name</span>
+                                    <input id="stageName" type="text" class="form-control" @bind="Stage.StageName" />
+                                    <button class="btn btn-danger float-end" @onclick="() => DeleteStage()">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Stage Color</span>
+                                    <input class="form-control" type="color" @bind="Stage.StageColor"></input>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (SortedUpcomingArtists.Any() || SortedPastArtists.Any())
+                        {
+                            <hr />
+
+                            <h6>Artists</h6>
+                            <Virtualize Items="SortedUpcomingArtists" Context="artist">
+                                <div class="mb-3 w-100" @onclick="() => EditArtist(artist)">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-fill">
+                                            <strong class="@(artist.Conflicts.Any() ? "text-danger" : "")">@artist.Name</strong>
+
+                                            <button class="btn btn-sm btn-danger float-end"
+                                                    @onclick:stopPropagation="true"
+                                                    @onclick="() => RemoveArtist(artist)">
+                                                🗑️
+                                            </button>
+
+                                            <br />
+                                            <small>
+                                                @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.ToLocalTime().ToString("t"))
+                                            </small>
+
+                                            @foreach (var conflictMessage in artist.Conflicts)
+                                            {
+                                                <p style="font-size: 75%" class="text-danger m-0 p-0">@conflictMessage</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </Virtualize>
+
+                            @if (SortedPastArtists.Any())
+                            {
+                                <button class="btn btn-outline-secondary w-100" data-bs-toggle="collapse" data-bs-target="#PastSets">View Past Sets</button>
+                                <div id="PastSets" class="collapse opacity-50">
+                                    <div class="mt-3"></div>
+                                    <Virtualize Items="SortedPastArtists" Context="artist">
+                                        <div class="mb-3 w-100" @onclick="() => EditArtist(artist)">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="flex-fill">
+                                                    <strong class="@(artist.Conflicts.Any() ? "text-danger" : "")">@artist.Name</strong>
+                                                    <br />
+                                                    <small>
+                                                        @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.ToLocalTime().ToString("t"))
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Virtualize>
+                                </div>
+                            }
+                        
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="AddArtist">Add Artist</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<ArtistModal ShowModal="ShowArtistModal"
+             Stage="Stage"
+             Artist="SelectedArtist"
+             OnClose="CloseArtistModal" />
+
+@code {
+    [Parameter] public bool ShowModal { get; set; }
+    [Parameter] public Stage Stage { get; set; }
+    [Parameter] public DateTime FestivalStartDate { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnDeleteStage { get; set; }
+    [Parameter] public EventCallback AutoSave { get; set; }
+
+    private List<Artist> SortedUpcomingArtists = new List<Artist>();
+    private List<Artist> SortedPastArtists = new List<Artist>();
+
+    private bool ShowArtistModal = false;
+    private Artist SelectedArtist = new();
+
+    protected override void OnParametersSet()
+    {
+        if (ShowModal && Stage != null)
+        {
+            SortArtists();
+        }
+
+        base.OnParametersSet();
+    }
+
+    private async Task CloseModal()
+    {
+        await OnClose.InvokeAsync(null);
+    }
+
+    private async Task DeleteStage()
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the stage \"{Stage.StageName}\"?");
+        if (confirm)
+        {
+            await OnDeleteStage.InvokeAsync(null);
+        }
+    }
+
+    private async Task AutoSaveAsync()
+    {
+        await AutoSave.InvokeAsync(null);
+    }
+
+    private Task AddArtist()
+    {
+        // set the selected artist to null
+        var defaultDateTime = FestivalStartDate.Date;
+        SelectedArtist = new() { SetTimeStart = defaultDateTime, SetTimeEnd = defaultDateTime };
+
+        // show artist modal
+        ShowArtistModal = true;
+
+        // hide stage modal
+        ShowModal = false;
+
+        return Task.CompletedTask;
+    }
+
+    private async Task EditArtist(Artist artist)
+    {
+        // set artist in modal
+        SelectedArtist = artist;
+        SelectedArtist.SetTimeStart = SelectedArtist.SetTimeStart.ToLocalTime();
+        SelectedArtist.SetTimeEnd = SelectedArtist.SetTimeEnd.ToLocalTime();
+
+        // show artist modal
+        ShowArtistModal = true;
+
+        // hide stage modal
+        ShowModal = false;
+
+        await AutoSaveAsync();
+    }
+
+    private async Task RemoveArtist(Artist artist)
+    {
+        Stage.Artists.Remove(artist);
+
+        SortArtists();
+        await AutoSaveAsync();
+    }
+
+    private async Task CloseArtistModal()
+    {
+
+        SortArtists();
+
+        // reset selected artist
+        SelectedArtist = new();
+
+        // show stage modal
+        ShowModal = true;
+
+        // hide artist modal
+        ShowArtistModal = false;
+
+        await AutoSave.InvokeAsync(null);
+    }
+
+    private void SortArtists()
+    {
+        var sortedArtists = Stage.Artists.OrderBy(x => x.SetTimeStart);
+
+        SortedUpcomingArtists = sortedArtists.Where(x => x.SetTimeEnd > DateTime.UtcNow).ToList();
+        SortedPastArtists = sortedArtists.Where(x => x.SetTimeEnd <= DateTime.UtcNow).ToList();
+    }
+}

@@ -35,11 +35,11 @@
                         <hr />
 
                         <h6>Artists</h6>
-                        <Virtualize Items="SortedArtists" Context="artist">
+                        <Virtualize Items="SortedUpcomingArtists" Context="artist">
                             <div class="mb-3 w-100" @onclick="() => EditArtist(artist.Id)">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="flex-fill">
-                                        <strong class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
+                                        <strong class="@(artist.Conflicts.Any() ? "text-danger" : "")">@artist.Name</strong>
 
                                         <button class="btn btn-sm btn-danger float-end"
                                                 @onclick:stopPropagation="true"
@@ -52,7 +52,7 @@
                                             @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.ToLocalTime().ToString("t"))
                                         </small>
 
-                                        @foreach (var conflictMessage in GetConflictMessage.Invoke(artist.Id))
+                                        @foreach (var conflictMessage in artist.Conflicts)
                                         {
                                             <p style="font-size: 75%" class="text-danger m-0 p-0">@conflictMessage</p>
                                         }
@@ -61,7 +61,27 @@
                             </div>
                         </Virtualize>
 
+                        <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#PastSets">View Past Sets</button>
+                        <div id="PastSets" class="collapse opacity-50">
+                            <div class="mt-3"></div>
+                            <Virtualize Items="SortedPastArtists" Context="artist">
+                                <div class="mb-3 w-100" @onclick="() => EditArtist(artist.Id)">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-fill">
+                                            <strong class="@(artist.Conflicts.Any() ? "text-danger" : "")">@artist.Name</strong>
+                                            <br />
+                                            <small>
+                                                @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.ToLocalTime().ToString("t"))
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Virtualize>
+                        </div>
+
                         <hr />
+
+                        <button class="btn btn-success">Add Artist</button>
 
                         <h6>Add Artist</h6>
                         <div class="row mb-2">
@@ -109,9 +129,7 @@
     [Parameter] public Stage Stage { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
-    [Parameter] public Func<string, bool>? IsArtistConflicting { get; set; } = _ => false;
     [Parameter] public EventCallback OnArtistChange { get; set; }
-    [Parameter] public Func<string, List<string>>? GetConflictMessage { get; set; }
     [Parameter] public EventCallback OnDeleteStage { get; set; }
     [Parameter] public DateTime FestivalStartDate { get; set; } = DateTime.Now;
     [Parameter] public EventCallback AutoSave { get; set; }
@@ -122,7 +140,8 @@
     private DateTime ArtistStartTimeLocal;
     private DateTime ArtistEndTimeLocal;
 
-    private List<Artist> SortedArtists => Stage.Artists.OrderBy(a => a.SetTimeStart).ToList();
+    private List<Artist> SortedUpcomingArtists => Stage.Artists.Where(x => x.SetTimeEnd.ToLocalTime() > DateTime.Now).OrderBy(a => a.SetTimeStart).ToList();
+    private List<Artist> SortedPastArtists => Stage.Artists.Where(x => x.SetTimeEnd.ToLocalTime() <= DateTime.Now).OrderBy(a => a.SetTimeStart).ToList();
 
 
     @code {
@@ -193,11 +212,14 @@
             return;
         }
 
+        var startTimeUtc = ArtistStartTimeLocal.ToUniversalTime();
+        var endTimeUtc = ArtistEndTimeLocal.ToUniversalTime();
+
         var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == NewArtist.Id);
         if (existingArtist != null)
         {
-            existingArtist.SetTimeStart = DateTime.SpecifyKind(ArtistStartTimeLocal, DateTimeKind.Local).ToUniversalTime();
-            existingArtist.SetTimeEnd = DateTime.SpecifyKind(ArtistEndTimeLocal, DateTimeKind.Local).ToUniversalTime();
+            existingArtist.SetTimeStart = startTimeUtc;
+            existingArtist.SetTimeEnd = endTimeUtc;
         }
         else
         {
@@ -205,8 +227,8 @@
             var artist = new Artist
             {
                 Name = NewArtist.Name,
-                SetTimeStart = NewArtist.SetTimeStart.ToUniversalTime(),
-                SetTimeEnd = NewArtist.SetTimeEnd.ToUniversalTime(),
+                SetTimeStart = startTimeUtc,
+                SetTimeEnd = endTimeUtc,
                 SetDurationMinutes = NewArtist.SetDurationMinutes
             };
 
