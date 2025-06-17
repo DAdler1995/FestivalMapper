@@ -181,18 +181,10 @@
 <StageModal 
 	ShowModal="ShowEditStageModal"
 	Stage="SelectedStage"
-	OnClose="SaveAndCloseStageModal"
-	OnDeleteStage="DeleteStage" />
-
-@* <EditStageModal 
-	IsVisible="@ShowEditStageModal" 
-	Stage="@SelectedStage" 
-	OnClose="@SaveAndCloseStageModal" 
-	OnSave="@SaveStageChanges" 
-	OnArtistChange="@DetectScheduleConflicts" 
-	OnDeleteStage="DeleteStage" 
 	FestivalStartDate="FestivalMap.FestivalStartDate"
-	AutoSave="TriggerAutoSave"/> *@
+	OnClose="SaveAndCloseStageModal"
+	OnDeleteStage="DeleteStage"
+	AutoSave="TriggerAutoSave" />
 
 
 @code {
@@ -262,6 +254,8 @@
 
 	private async Task AutoSaveAsync()
 	{
+		DetectScheduleConflicts();
+
 		if (savePending || string.IsNullOrWhiteSpace(FestivalMap.FestivalName))
 		{
 			return;
@@ -318,8 +312,19 @@
 		return FestivalMap.Stages.FirstOrDefault(x => x.Id == stageId).StageName;
 	}
 
+	private void ResetAllConflicts()
+	{
+		var allArtist = FestivalMap.Stages.SelectMany(x => x.Artists).ToList();
+		foreach (var artist in allArtist)
+		{
+			artist.ConflictingSets = new List<Conflict>();
+		}
+	}
+
 	private void DetectScheduleConflicts()
 	{
+		ResetAllConflicts();
+
 		var allArtists = FestivalMap.Stages.SelectMany(s => s.Artists.Select(a => new
 		{
 			StageId = s.Id,
@@ -377,6 +382,8 @@
 				}
 			}
 		}
+
+		StateHasChanged();
 	}
 
 

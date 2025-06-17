@@ -47,10 +47,6 @@
                         </div>
                     </div>
                 </div>
-                @*                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
-                    <button type="button" class="btn btn-primary" @onclick="CloseModal">Save changes</button>
-                </div> *@
             </div>
         </div>
     </div>
@@ -60,12 +56,19 @@
     [Parameter] public bool ShowModal { get; set; }
     [Parameter] public Stage Stage { get; set; }
     [Parameter] public Artist Artist { get; set; }
-    [Parameter] public DateTime FestivalStartDate { get; set; } = DateTime.Now;
 
     [Parameter] public EventCallback OnClose { get; set; }
 
     private DateTime ArtistStartTimeLocal;
     private DateTime ArtistEndTimeLocal;
+
+    protected override Task OnParametersSetAsync()
+    {
+        ArtistStartTimeLocal = Artist.SetTimeStart;
+        ArtistEndTimeLocal = Artist.SetTimeEnd;
+
+        return base.OnParametersSetAsync();
+    }
 
     private async Task CloseModal()
     {
@@ -79,36 +82,17 @@
             return;
         }
 
-        var startTimeUtc = ArtistStartTimeLocal.ToUniversalTime();
-        var endTimeUtc = ArtistEndTimeLocal.ToUniversalTime();
+        // convert times to utc
+        Artist.SetTimeStart = ArtistStartTimeLocal.ToUniversalTime();
+        Artist.SetTimeEnd = ArtistEndTimeLocal.ToUniversalTime();
 
-        //var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == NewArtist.Id);
-        if (Artist != null)
+        var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == Artist.Id);
+        if (!Stage.Artists.Any(x => x.Id == Artist.Id))
         {
-            Artist.SetTimeStart = startTimeUtc;
-            Artist.SetTimeEnd = endTimeUtc;
-        }
-        else
-        {
-            Artist.SetTimeStart = startTimeUtc;
-            Artist.SetTimeEnd = endTimeUtc;
-
             Stage.Artists.Add(Artist);
         }
 
-        ResetNewArtist();
-    }
-
-    private void ResetNewArtist()
-    {
-        ArtistStartTimeLocal = FestivalStartDate;
-        ArtistEndTimeLocal = FestivalStartDate;
-
-        Artist = new()
-        {
-            SetTimeStart = FestivalStartDate,
-            SetTimeEnd = FestivalStartDate
-        };
+        await CloseModal();
     }
 
 

@@ -80,10 +80,9 @@
                         </div>
                     </div>
                 </div>
-@*                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
-                    <button type="button" class="btn btn-primary" @onclick="CloseModal">Save changes</button>
-                </div> *@
+                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="AddArtist">Add Artist</button>
+                </div> 
             </div>
         </div>
     </div>
@@ -93,24 +92,22 @@
     ShowModal="ShowArtistModal"
     Stage="Stage"
     Artist="SelectedArtist"
-    FestivalStartDate="DateTime.Now"
-    OnClose="CloseModal"/>
-
-
+    OnClose="CloseArtistModal" />
 
 @code {
     [Parameter] public bool ShowModal { get; set; }
     [Parameter] public Stage Stage { get; set; }
+    [Parameter] public DateTime FestivalStartDate { get; set; }
 
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnDeleteStage { get; set; }
+    [Parameter] public EventCallback AutoSave { get; set; }
 
     private List<Artist> SortedUpcomingArtists => Stage.Artists.Where(x => x.SetTimeEnd.ToLocalTime() > DateTime.Now).OrderBy(a => a.SetTimeStart).ToList();
     private List<Artist> SortedPastArtists => Stage.Artists.Where(x => x.SetTimeEnd.ToLocalTime() <= DateTime.Now).OrderBy(a => a.SetTimeStart).ToList();
 
     private bool ShowArtistModal = false;
     private Artist SelectedArtist = new();
-
 
     private async Task CloseModal()
     {
@@ -126,20 +123,59 @@
         }
     }
 
-    private async Task EditArtist(Artist artist)
+    private async Task AutoSaveAsync()
     {
-        // set artist in modal
-        SelectedArtist = artist;
+        await AutoSave.InvokeAsync(null);
+    }
+
+    private Task AddArtist()
+    {
+        // set the selected artist to null
+        var defaultDateTime = FestivalStartDate.Date;
+        SelectedArtist = new() { SetTimeStart = defaultDateTime, SetTimeEnd = defaultDateTime };
 
         // show artist modal
         ShowArtistModal = true;
 
         // hide stage modal
-        //await CloseModal();
+        ShowModal = false;
+
+        return Task.CompletedTask;
     }
-    
+
+    private async Task EditArtist(Artist artist)
+    {
+        // set artist in modal
+        SelectedArtist = artist;
+        SelectedArtist.SetTimeStart = SelectedArtist.SetTimeStart.ToLocalTime();
+        SelectedArtist.SetTimeEnd = SelectedArtist.SetTimeEnd.ToLocalTime();
+
+        // show artist modal
+        ShowArtistModal = true;
+
+        // hide stage modal
+        ShowModal = false;
+
+        await AutoSaveAsync();
+    }
+
     private async Task RemoveArtist(Artist artist)
     {
-        
+        Stage.Artists.Remove(artist);
+        await AutoSaveAsync();
+    }
+
+    private async Task CloseArtistModal()
+    {
+        // reset selected artist
+        SelectedArtist = new();
+
+        // show stage modal
+        ShowModal = true;
+
+        // hide artist modal
+        ShowArtistModal = false;
+
+        await AutoSave.InvokeAsync(null);
     }
 }
