@@ -35,7 +35,7 @@
                         <hr />
 
                         <h6>Artists</h6>
-                        <Virtualize Items="SortedArtists" Context="artist">
+                        <Virtualize Items="SortedUpcomingArtists" Context="artist">
                             <div class="mb-3 w-100" @onclick="() => EditArtist(artist.Id)">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="flex-fill">
@@ -61,7 +61,27 @@
                             </div>
                         </Virtualize>
 
+                        <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#PastSets">View Past Sets</button>
+                        <div id="PastSets" class="collapse opacity-50">
+                            <div class="mt-3"></div>
+                            <Virtualize Items="SortedPastArtists" Context="artist">
+                                <div class="mb-3 w-100" @onclick="() => EditArtist(artist.Id)">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="flex-fill">
+                                            <strong class="@(IsArtistConflicting(artist.Id) ? "text-danger" : "")">@artist.Name</strong>
+                                            <br />
+                                            <small>
+                                                @artist.SetTimeStart.ToLocalTime().ToShortDateString() @artist.SetTimeStart.ToLocalTime().ToString("t") – @(artist.SetTimeEnd.ToLocalTime().ToString("t"))
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Virtualize>
+                        </div>
+
                         <hr />
+
+                        <button class="btn btn-success">Add Artist</button>
 
                         <h6>Add Artist</h6>
                         <div class="row mb-2">
@@ -122,7 +142,8 @@
     private DateTime ArtistStartTimeLocal;
     private DateTime ArtistEndTimeLocal;
 
-    private List<Artist> SortedArtists => Stage.Artists.OrderBy(a => a.SetTimeStart).ToList();
+    private List<Artist> SortedUpcomingArtists => Stage.Artists.Where(x => x.SetTimeEnd.ToLocalTime() > DateTime.Now).OrderBy(a => a.SetTimeStart).ToList();
+    private List<Artist> SortedPastArtists => Stage.Artists.Where(x => x.SetTimeEnd.ToLocalTime() <= DateTime.Now).OrderBy(a => a.SetTimeStart).ToList();
 
 
     @code {
@@ -148,10 +169,10 @@
 
     private void ResetNewArtist()
     {
-    ArtistStartTimeLocal = FestivalStartDate;
-    ArtistEndTimeLocal = FestivalStartDate;
+        ArtistStartTimeLocal = FestivalStartDate;
+        ArtistEndTimeLocal = FestivalStartDate;
 
-    NewArtist = new()
+        NewArtist = new()
         {
             SetTimeStart = FestivalStartDate,
             SetTimeEnd = FestivalStartDate
@@ -160,30 +181,30 @@
 
     protected override void OnParametersSet()
     {
-    // Set default artist time when modal opens
-    ResetNewArtist();
-    StateHasChanged();
+        // Set default artist time when modal opens
+        ResetNewArtist();
+        StateHasChanged();
     }
 
     private void UpdateEndTime(DateTime newStartTime)
     {
-    if (NewArtist != null)
-    {
-        ArtistStartTimeLocal = newStartTime;
-        ArtistEndTimeLocal = newStartTime.AddHours(1);
-    }
+        if (NewArtist != null)
+        {
+            ArtistStartTimeLocal = newStartTime;
+            ArtistEndTimeLocal = newStartTime.AddHours(1);
+        }
     }
 
     private void EditArtist(string id)
     {
-    var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == id);
-    if (existingArtist != null)
-    {
-        ArtistStartTimeLocal = existingArtist.SetTimeStart.ToLocalTime();
-        ArtistEndTimeLocal = existingArtist.SetTimeEnd.ToLocalTime();
+        var existingArtist = Stage.Artists.FirstOrDefault(x => x.Id == id);
+        if (existingArtist != null)
+        {
+            ArtistStartTimeLocal = existingArtist.SetTimeStart.ToLocalTime();
+            ArtistEndTimeLocal = existingArtist.SetTimeEnd.ToLocalTime();
 
-        NewArtist = existingArtist;
-    }
+            NewArtist = existingArtist;
+        }
     }
 
     private async Task SaveArtist()
