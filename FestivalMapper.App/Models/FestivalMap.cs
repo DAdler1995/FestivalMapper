@@ -37,25 +37,7 @@ namespace FestivalMapper.App.Models
         public DateTime SetTimeStart { get; set; }
         public DateTime SetTimeEnd { get; set; }
         public short? SetDurationMinutes { get; set; }
-        public List<Conflict> ConflictingSets { get; set; } = new List<Conflict>();
-    }
-
-    public class Conflict
-    {
-        public string ArtistName { get; set; }
-        public DateTime ArtistSetStartUtc { get; set; }
-        public DateTime ArtistSetEndUtc { get; set; }
-        public string StageName { get; set; }
-
-        public string ConflictMessage
-        {
-            get
-            {
-                var conflictArtistSetStart = ArtistSetStartUtc.ToLocalTime().ToString("t");
-                var conflictArtistSetEnd = ArtistSetEndUtc.ToLocalTime().ToString("t");
-                return $"Conflicting set: {ArtistName} ({StageName}) at {conflictArtistSetStart} - {conflictArtistSetEnd}";
-            }
-        }
+        public List<string> Conflicts { get; set; } = new List<string>();
     }
 
 }
