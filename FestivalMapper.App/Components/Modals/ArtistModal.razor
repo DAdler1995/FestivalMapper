@@ -4,7 +4,7 @@
 
 @if (ShowModal)
 {
-    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -64,8 +64,8 @@
 
     protected override Task OnParametersSetAsync()
     {
-        ArtistStartTimeLocal = Artist.SetTimeStart;
-        ArtistEndTimeLocal = Artist.SetTimeEnd;
+        ArtistStartTimeLocal = Artist.SetTimeStart.ToLocalTime();
+        ArtistEndTimeLocal = Artist.SetTimeEnd.ToLocalTime();
 
         return base.OnParametersSetAsync();
     }

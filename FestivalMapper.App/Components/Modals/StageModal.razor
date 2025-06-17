@@ -2,9 +2,9 @@
 
 @inject IJSRuntime JS
 
-@if (ShowModal)
+@if (Stage != null)
 {
-    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal fade @(ShowStageModal ? "show d-block" : "")" style="background-color: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -101,8 +101,7 @@
              OnClose="CloseArtistModal" />
 
 @code {
-    [Parameter] public bool ShowModal { get; set; }
-    [Parameter] public Stage Stage { get; set; }
+    [Parameter] public Stage? Stage { get; set; }
     [Parameter] public DateTime FestivalStartDate { get; set; }
 
     [Parameter] public EventCallback OnClose { get; set; }
@@ -112,12 +111,13 @@
     private List<Artist> SortedUpcomingArtists = new List<Artist>();
     private List<Artist> SortedPastArtists = new List<Artist>();
 
+    private bool ShowStageModal = true;
     private bool ShowArtistModal = false;
     private Artist SelectedArtist = new();
 
     protected override void OnParametersSet()
     {
-        if (ShowModal && Stage != null)
+        if (Stage != null && ShowStageModal && !ShowArtistModal)
         {
             SortArtists();
         }
@@ -154,7 +154,7 @@
         ShowArtistModal = true;
 
         // hide stage modal
-        ShowModal = false;
+        ShowStageModal = false;
 
         return Task.CompletedTask;
     }
@@ -170,7 +170,9 @@
         ShowArtistModal = true;
 
         // hide stage modal
-        ShowModal = false;
+        ShowStageModal = false;
+
+        StateHasChanged();
 
         await AutoSaveAsync();
     }
@@ -192,7 +194,7 @@
         SelectedArtist = new();
 
         // show stage modal
-        ShowModal = true;
+        ShowStageModal = true;
 
         // hide artist modal
         ShowArtistModal = false;

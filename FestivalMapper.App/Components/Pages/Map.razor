@@ -179,7 +179,6 @@
 </style>
 
 <StageModal 
-	ShowModal="ShowEditStageModal"
 	Stage="SelectedStage"
 	FestivalStartDate="FestivalMap.FestivalStartDate"
 	OnClose="SaveAndCloseStageModal"
@@ -204,7 +203,6 @@
 
 	private int stageIdCounter = 1;
 
-	private bool ShowEditStageModal = false;
 	private Stage? SelectedStage;
 
 	private int stageMarkerRadius = 25;
@@ -278,7 +276,6 @@
 			FestivalMap.Stages.Remove(SelectedStage);
 
 			SelectedStage = null;
-			ShowEditStageModal = false;
 			DetectScheduleConflicts();
 		}
 
@@ -382,7 +379,6 @@
 
 	private Task SaveAndCloseStageModal()
 	{
-		ShowEditStageModal = false;
 		SelectedStage = null;
 		TriggerAutoSave();
 
@@ -392,18 +388,13 @@
 	private async Task SaveStageChanges()
 	{
 		// All data is bound to the selected stage, so we just close
-		ShowEditStageModal = false;
 		SelectedStage = null;
 		await SaveCurrentMap();
 	}
 
 	private void EditStage(string id)
 	{
-		SelectedStage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);
-		if (SelectedStage != null)
-		{
-			ShowEditStageModal = true;
-		}		
+		SelectedStage = FestivalMap.Stages.FirstOrDefault(x => x.Id == id);	
 	}
 
 	private async Task OnMapClick(MouseEventArgs e)
