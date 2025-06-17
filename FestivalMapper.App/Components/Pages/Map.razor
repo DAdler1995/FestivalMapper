@@ -317,7 +317,7 @@
 		var allArtist = FestivalMap.Stages.SelectMany(x => x.Artists).ToList();
 		foreach (var artist in allArtist)
 		{
-			artist.ConflictingSets = new List<Conflict>();
+			artist.Conflicts = new List<string>();
 		}
 	}
 
@@ -354,30 +354,16 @@
 
 				if (overlaps)
 				{
-					var a1Conflict = new Conflict
+					var a1ConflictMessage = $"CONFLICT: {a2.Artist.Name} ({a2.StageName}) at {a2.Artist.SetTimeStart.ToLocalTime().ToString("t")} - {a2.Artist.SetTimeEnd.ToLocalTime().ToString("t")}";
+					if (!a1.Artist.Conflicts.Contains(a1ConflictMessage))
 					{
-						ArtistName = a2.Artist.Name,
-						ArtistSetStartUtc = a2.Artist.SetTimeStart,
-						ArtistSetEndUtc = a2.Artist.SetTimeEnd,
-						StageName = a2.StageName
-					};
-
-					var a2Conflict = new Conflict
-					{
-						ArtistName = a1.Artist.Name,
-						ArtistSetStartUtc = a1.Artist.SetTimeStart,
-						ArtistSetEndUtc = a1.Artist.SetTimeEnd,
-						StageName = a1.StageName
-					};
-
-					if (!a1.Artist.ConflictingSets.Contains(a1Conflict))
-					{
-						a1.Artist.ConflictingSets.Add(a1Conflict);
+						a1.Artist.Conflicts.Add(a1ConflictMessage);
 					}
 
-					if (!a2.Artist.ConflictingSets.Contains(a2Conflict))
+					var a2ConflictMessage = $"CONFLICT: {a1.Artist.Name} ({a1.StageName}) at {a1.Artist.SetTimeStart.ToLocalTime().ToString("t")} - {a1.Artist.SetTimeEnd.ToLocalTime().ToString("t")}";
+					if (!a2.Artist.Conflicts.Contains(a2ConflictMessage))
 					{
-						a2.Artist.ConflictingSets.Add(a2Conflict);
+						a2.Artist.Conflicts.Add(a2ConflictMessage);
 					}
 				}
 			}
