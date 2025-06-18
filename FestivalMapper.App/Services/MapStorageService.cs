@@ -127,5 +127,31 @@ namespace FestivalMapper.App.Services
                 return null;
             }
         }
+
+        public async Task ShareMap(string festivalId)
+        {
+            var fileNameSafe = string.Join("_", festivalId.Split(Path.GetInvalidFileNameChars()));
+            var filePath = Path.Combine(SaveDirectory, $"{fileNameSafe}.festivalmap");
+
+            if (File.Exists(filePath))
+            {
+                var festivalMap = "";
+                var json = await File.ReadAllTextAsync(filePath);
+                try
+                {
+                    var map = JsonSerializer.Deserialize<FestivalMap>(json);
+                    await Share.Default.RequestAsync(new ShareFileRequest
+                    {
+                        Title = $"Festival Map: {map.FestivalName}",
+                        File = new ShareFile(filePath)
+                    });
+                }
+                catch
+                {
+                    // do nothing with invalid maps currently
+                }
+
+            }
+        }
     }
 }
