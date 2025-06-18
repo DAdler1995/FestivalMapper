@@ -28,7 +28,7 @@
         <ApplicationId>com.codereddevelopment.festivalmapper.app</ApplicationId>
 
         <!-- Versions -->
-        <ApplicationDisplayVersion>0.0.5</ApplicationDisplayVersion>
+        <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
 		<ApplicationVersion>$([System.DateTimeOffset]::Now.ToUnixTimeSeconds())</ApplicationVersion>
 
         <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
