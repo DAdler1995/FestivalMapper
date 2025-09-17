@@ -59,6 +59,12 @@ jobs:
         - name: Restore Dependencies
           run: dotnet restore ${{ inputs.project-file }}
 
+        # ---------------- Version the app ----------------
+        # Strategy:
+        #   - If triggered by a tag vX.Y.Z -> displayVersion = X.Y.Z
+        #   - Else read major.minor from csproj (<ApplicationDisplayVersion> or <Version> or <VersionPrefix>)
+        #   - Else fallback "1.0"
+        #   - Set patch = github.run_number (auto-increment each run)
         - name: Version the app
           id: version
           shell: pwsh
@@ -67,49 +73,56 @@ jobs:
             $csproj = Join-Path "${{ github.workspace }}" "${{ inputs.project-file }}"
             $content = Get-Content $csproj -Raw
   
-            # Try to pull an explicit version from the csproj
-            $display = $null
-            if ($content -match '<ApplicationDisplayVersion>\s*([^<]+)\s*</ApplicationDisplayVersion>') {
-              $display = $Matches[1].Trim()
-            } elseif ($content -match '<Version>\s*([^<]+)\s*</Version>') {
-              $display = $Matches[1].Trim()
+            $tag = "${{ github.ref_name }}"
+            if ($tag -match '^v\d+\.\d+(\.\d+)?$') {
+              $display = $tag.TrimStart('v')
+            } else {
+              $majorMinor = $null
+  
+              # Prefer ApplicationDisplayVersion, else Version, else VersionPrefix
+              if ($content -match '<ApplicationDisplayVersion>\s*([^<]+)\s*</ApplicationDisplayVersion>') {
+                $v = $Matches[1].Trim()
+              } elseif ($content -match '<Version>\s*([^<]+)\s*</Version>') {
+                $v = $Matches[1].Trim()
+              } elseif ($content -match '<VersionPrefix>\s*([^<]+)\s*</VersionPrefix>') {
+                $v = $Matches[1].Trim()
+              } else {
+                $v = '1.0.0'
+              }
+  
+              # Keep only major.minor
+              $parts = ($v -split '\.')
+              if ($parts.Count -ge 2) {
+                $majorMinor = "$($parts[0]).$($parts[1])"
+              } else {
+                $majorMinor = '1.0'
+              }
+  
+              $patch = $env:GITHUB_RUN_NUMBER
+              $display = "$majorMinor.$patch"
             }
   
-            # If a tag like v1.2.3 triggered this, prefer it
-            $refName = "${{ github.ref_name }}"
-            if ($refName -match '^v\d+\.\d+(\.\d+)?$') {
-              $display = $refName.TrimStart('v')
-            }
-  
-            if ([string]::IsNullOrWhiteSpace($display)) {
-              # Ultimate fallback: 0.0.(run)
-              $display = "0.0.${{ github.run_number }}"
-            }
-  
-            # Convert displayVersion to a monotonically increasing integer for ApplicationVersion
-            # e.g. 1.2.3 => 1002003 (naive scheme)
-            $parts = ($display -split '\.')
-            while ($parts.Count -lt 3) { $parts += '0' }
-            $major = [int]$parts[0]; $minor = [int]$parts[1]; $patch = [int]$parts[2]
+            # Compute monotonically increasing ApplicationVersion (int)
+            $p = ($display -split '\.')
+            while ($p.Count -lt 3) { $p += '0' }
+            $major = [int]$p[0]; $minor = [int]$p[1]; $patch = [int]$p[2]
             $buildVersion = ($major * 1000000) + ($minor * 1000) + $patch
   
-            "displayVersion=$display"       | Out-File -FilePath $env:GITHUB_OUTPUT -Append
-            "buildVersion=$buildVersion"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "displayVersion=$display"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "buildVersion=$buildVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
   
             Write-Host "Resolved displayVersion=$display"
             Write-Host "Resolved buildVersion=$buildVersion"
 
-        # write keystore from secret (base64)
-        - name: Write Android keystore from secret
+        - name: Write Android keystore from secret (base64)
           id: write_keystore
           uses: timheuer/base64-to-file@v1
           with:
             fileDir: '${{ github.workspace }}\${{ inputs.project-folder }}'
             fileName: 'ourkeystore.jks'
-            encodedString: ${{ secrets.keystore }}
-
-        # publish signed APK
-        - name: Publish MAUI Android APK
+            encodedString: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+  
+        - name: Publish MAUI Android (${{ inputs.package-format }})
           run: >
             dotnet publish "${{ inputs.project-file }}"
             -c "${{ inputs.build-config }}"
@@ -117,12 +130,20 @@ jobs:
             -o "${{ env.ARTIFACT_DIR }}"
             /p:AndroidKeyStore=true
             /p:AndroidSigningKeyStore="${{ steps.write_keystore.outputs.filePath }}"
-            /p:AndroidSigningKeyAlias="${{ secrets.keystore-alias }}"
-            /p:AndroidSigningKeyPass="${{ secrets.keystore-password }}"
-            /p:AndroidSigningStorePass="${{ secrets.keystore-password }}"
-            /p:AndroidPackageFormat=apk
+            /p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}"
+            /p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+            /p:AndroidSigningStorePass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+            /p:AndroidPackageFormat=${{ inputs.package-format }}
+            /p:ApplicationDisplayVersion="${{ steps.version.outputs.displayVersion }}"
+            /p:ApplicationVersion=${{ steps.version.outputs.buildVersion }}
             --no-restore
-
+  
+        - name: List publish output
+          shell: pwsh
+          run: |
+            Write-Host "== Contents of $env:ARTIFACT_DIR =="
+            Get-ChildItem -Recurse $env:ARTIFACT_DIR | ForEach-Object { $_.FullName }
+  
         - name: Upload Android artifact
           uses: actions/upload-artifact@v4
           with:
@@ -132,7 +153,7 @@ jobs:
             if-no-files-found: warn
             retention-days: 14
   
-        - name: Create GitHub Release
+        - name: Create GitHub Release (v${{ steps.version.outputs.displayVersion }})
           uses: softprops/action-gh-release@v2
           with:
             tag_name: v${{ steps.version.outputs.displayVersion }}
@@ -140,5 +161,6 @@ jobs:
             generate_release_notes: true
             draft: false
             prerelease: false
+            # Use forward slashes for reliability with globs
             files: |
-              ${{ env.ARTIFACT_DIR }}\*.apk
+              ${{ github.workspace }}/artifacts/android/*.apk
