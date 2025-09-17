@@ -114,15 +114,16 @@ jobs:
             Write-Host "Resolved displayVersion=$display"
             Write-Host "Resolved buildVersion=$buildVersion"
 
-        - name: Write Android keystore from secret (base64)
+        # write keystore from secret (base64)
+        - name: Write Android keystore from secret
           id: write_keystore
           uses: timheuer/base64-to-file@v1
           with:
             fileDir: '${{ github.workspace }}\${{ inputs.project-folder }}'
             fileName: 'ourkeystore.jks'
-            encodedString: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+            encodedString: ${{ secrets.keystore }}
   
-        - name: Publish MAUI Android (${{ inputs.package-format }})
+        - name: Publish MAUI Android APK
           run: >
             dotnet publish "${{ inputs.project-file }}"
             -c "${{ inputs.build-config }}"
