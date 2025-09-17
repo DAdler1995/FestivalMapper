@@ -12,6 +12,8 @@ jobs:
     env:
       DOTNET_NOLOGO: true
       DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+      DOTNET_CLI_TELEMETRY_OUTPUT: true
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
       MAUI_PROJECT: FestivalMapper.App/FestivalMapper.App.csproj
       PUBLISH_DIR: ${{ github.workspace }}/publish-android
@@ -23,7 +25,7 @@ jobs:
       - name: App Version
         uses: managedcode/MAUIAppVersion@v1
         with:
-          csproj: $MAUI_PROJECT
+          csproj: '$MAUI_PROJECT'
           version: ${{ github.run_number }}
           displayVersion: '1.0.0'
           printFile: true
