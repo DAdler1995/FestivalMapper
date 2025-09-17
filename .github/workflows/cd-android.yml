@@ -131,10 +131,10 @@ jobs:
             -o "${{ env.ARTIFACT_DIR }}"
             /p:AndroidKeyStore=true
             /p:AndroidSigningKeyStore="${{ steps.write_keystore.outputs.filePath }}"
-            /p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}"
-            /p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
-            /p:AndroidSigningStorePass="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
-            /p:AndroidPackageFormat=${{ inputs.package-format }}
+            /p:AndroidSigningKeyAlias="${{ secrets.keystore-alias }}"
+            /p:AndroidSigningKeyPass="${{ secrets.keystore-password }}"
+            /p:AndroidSigningStorePass="${{ secrets.keystore-password }}"
+            /p:AndroidPackageFormat=apk
             /p:ApplicationDisplayVersion="${{ steps.version.outputs.displayVersion }}"
             /p:ApplicationVersion=${{ steps.version.outputs.buildVersion }}
             --no-restore
