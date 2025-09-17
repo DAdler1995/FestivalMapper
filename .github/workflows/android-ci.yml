@@ -41,8 +41,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Restore NuGet
-        run: dotnet restore "$MAUI_PROJECT"
+      # 🔧 Restore *Android TFM only* so it won't require iOS workloads
+      - name: Restore NuGet (Android only)
+        run: dotnet restore "$MAUI_PROJECT" -p:TargetFramework=net9.0-android
 
       # Android Gradle Plugin requires JDK 17
       - name: Setup Java 17
