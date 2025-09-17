@@ -114,7 +114,7 @@ jobs:
             dotnet publish "${{ inputs.project-file }}"
             -c "${{ inputs.build-config }}"
             -f net9.0-android
-            -o "${{ github.workspace }}\artifacts\android"
+            -o "${{ env.ARTIFACT_DIR }}"
             /p:AndroidKeyStore=true
             /p:AndroidSigningKeyStore="${{ steps.write_keystore.outputs.filePath }}"
             /p:AndroidSigningKeyAlias="${{ secrets.keystore-alias }}"
@@ -129,11 +129,10 @@ jobs:
             name: android-${{ steps.version.outputs.displayVersion }}
             path: |
               ${{ env.ARTIFACT_DIR }}\*.apk
-              ${{ env.ARTIFACT_DIR }}\*.aab
             if-no-files-found: warn
             retention-days: 14
   
-        - name: Create GitHub Release (v${{ steps.version.outputs.displayVersion }})
+        - name: Create GitHub Release
           uses: softprops/action-gh-release@v2
           with:
             tag_name: v${{ steps.version.outputs.displayVersion }}
@@ -143,4 +142,3 @@ jobs:
             prerelease: false
             files: |
               ${{ env.ARTIFACT_DIR }}\*.apk
-              ${{ env.ARTIFACT_DIR }}\*.aab
