@@ -44,7 +44,7 @@ jobs:
 
       # ✅ Restore *Android only* to avoid iOS workload checks
       - name: Restore NuGet (Android only)
-        run: dotnet restore "$MAUI_PROJECT" -p:TargetFrameworks=net9.0-android -f net9.0-android
+        run: dotnet restore "$MAUI_PROJECT" -p:TargetFramework=net9.0-android -f net9.0-android
 
       # Android Gradle Plugin requires JDK 17
       - name: Setup Java 17
@@ -95,7 +95,7 @@ jobs:
           mkdir -p "$PUBLISH_DIR"
           dotnet publish "$MAUI_PROJECT" \
             -c Release \
-            -p:TargetFrameworks=net9.0-android \
+            -p:TargetFramework=net9.0-android \
             -f net9.0-android \
             -p:AndroidPackageFormats=apk \
             -p:AndroidKeyStore=true \
