@@ -20,6 +20,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: App Version
+        uses: managedcode/MAUIAppVersion@v1
+        with:
+          csproj: $MAUI_PROJECT
+          version: ${{ github.run_number }}
+          displayVersion: '1.0.0'
+          printFile: true
+
       - name: Setup .NET 9.x SDK
         uses: actions/setup-dotnet@v4
         with:
@@ -81,8 +89,8 @@ jobs:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           python3 -c "import os,base64,sys; b64=os.environ.get('ANDROID_KEYSTORE_BASE64',''); \
-          (open('signing.keystore','wb').write(base64.b64decode(b64)) if b64 else sys.exit('ANDROID_KEYSTORE_BASE64 is empty')); \
-          print('signing.keystore written')"
+          (open('signing.keystore','wb').write(base64.b64decode(b64)) if b64 else sys.exit('ANDROID_KEYSTORE_BASE64 is empty'))"
+          ls -la "$GITHUB_WORKSPACE/signing.keystore"
 
       # ---- Publish SIGNED APK (only path) ----
       - name: Publish signed APK
@@ -106,8 +114,11 @@ jobs:
             -o "$PUBLISH_DIR"
           echo "APK files in $PUBLISH_DIR:"
           ls -la "$PUBLISH_DIR"
-          # ensure keystore never ends up in artifacts
-          rm -f signing.keystore
+    
+      # Clean up
+      - name: Remove keystore
+        if: always()
+        run: rm -f "${{ env.KEYSTORE_PATH }}"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
