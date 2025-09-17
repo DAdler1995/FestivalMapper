@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ "master" ]
+    tags:
+      - 'v*'
     paths-ignore:
       - "**.md"
       - '**/*.gitignore'
@@ -11,6 +13,9 @@ on:
       - '**/*.yml'
   pull_request:
     branches: [ "master" ]
+
+permissions:
+  contents: write
     
 env:
   BUILD_VERSION: '1.0'
