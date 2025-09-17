@@ -28,7 +28,6 @@ jobs:
       - name: Dotnet info
         run: dotnet --info
 
-      # Install only the Android workload
       - name: Install MAUI Android workload
         run: |
           dotnet workload install maui-android
@@ -42,9 +41,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # ✅ Restore *Android only* to avoid iOS workload checks
+      # 🔧 Restore *Android TFM only* so it won't require iOS workloads
       - name: Restore NuGet (Android only)
-        run: dotnet restore "$MAUI_PROJECT" -p:TargetFramework=net9.0-android -f net9.0-android
+        run: dotnet restore "$MAUI_PROJECT" -p:TargetFramework=net9.0-android
 
       # Android Gradle Plugin requires JDK 17
       - name: Setup Java 17
@@ -62,10 +61,10 @@ jobs:
       - name: Validate signing secrets
         shell: bash
         env:
-          ANDROID_KEYSTORE_BASE64:    ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD:  ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS:          ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD:       ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEYSTORE_BASE64:  ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS:        ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD:     ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
           for v in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
@@ -75,16 +74,17 @@ jobs:
             fi
           done
 
-      # ---- Recreate keystore from Base64 (YAML-safe one-liner) ----
+      # ---- Recreate keystore from Base64 (no heredoc, YAML-safe) ----
       - name: Restore signing keystore
         shell: bash
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           python3 -c "import os,base64,sys; b64=os.environ.get('ANDROID_KEYSTORE_BASE64',''); \
-          (open('signing.keystore','wb').write(base64.b64decode(b64)) if b64 else sys.exit('ANDROID_KEYSTORE_BASE64 is empty'))"
+          (open('signing.keystore','wb').write(base64.b64decode(b64)) if b64 else sys.exit('ANDROID_KEYSTORE_BASE64 is empty')); \
+          print('signing.keystore written')"
 
-      # ✅ Publish signed APK forcing Android-only TFM and skipping restore
+      # ---- Publish SIGNED APK (only path) ----
       - name: Publish signed APK
         shell: bash
         env:
@@ -94,9 +94,8 @@ jobs:
         run: |
           mkdir -p "$PUBLISH_DIR"
           dotnet publish "$MAUI_PROJECT" \
-            -c Release \
+            -f net9.0-android -c Release \
             -p:TargetFramework=net9.0-android \
-            -f net9.0-android \
             -p:AndroidPackageFormats=apk \
             -p:AndroidKeyStore=true \
             -p:AndroidSigningKeyStore=signing.keystore \
@@ -107,6 +106,7 @@ jobs:
             -o "$PUBLISH_DIR"
           echo "APK files in $PUBLISH_DIR:"
           ls -la "$PUBLISH_DIR"
+          # ensure keystore never ends up in artifacts
           rm -f signing.keystore
 
       - name: Upload APK artifact
