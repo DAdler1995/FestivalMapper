@@ -1,0 +1,94 @@
+name: Android CI (APK)
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    # macOS runner is the most stable choice for MAUI Android CI
+    runs-on: macos-14
+
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+      # Set this to your MAUI project path relative to the repo root:
+      MAUI_PROJECT: FestivalMapper.App/FestivalMapper.App.csproj
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Display dotnet info
+        run: dotnet --info
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore NuGet
+        run: dotnet restore $MAUI_PROJECT
+
+      - name: Install MAUI Android workload
+        run: |
+          dotnet workload restore
+          dotnet workload install maui-android
+
+      # Gradle/AGP needs Java 17
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Accept Android SDK licenses (best-effort)
+        shell: bash
+        run: |
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+
+      # Provide secrets: ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+      - name: Decode keystore from secrets
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > signing.keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+
+      - name: Publish signed APK
+        run: |
+          PUBLISH_DIR="$GITHUB_WORKSPACE/publish-android"
+          dotnet publish $MAUI_PROJECT \
+            -f net9.0-android -c Release \
+            -p:AndroidPackageFormats=apk \
+            -p:AndroidKeyStore=true \
+            -p:AndroidSigningKeyStore=signing.keystore \
+            -p:AndroidSigningKeyAlias=${{ secrets.ANDROID_KEY_ALIAS }} \
+            -p:AndroidSigningKeyPass=${{ secrets.ANDROID_KEY_PASSWORD }} \
+            -p:AndroidSigningStorePass=${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
+            -o "$PUBLISH_DIR"
+          echo "APK output:"
+          ls -la "$PUBLISH_DIR"
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS:        ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD:     ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FestivalMapper-APK
+          path: |
+            **/publish-android/*.apk
+            **/bin/Release/net9.0-android/publish/*.apk
+          if-no-files-found: warn
