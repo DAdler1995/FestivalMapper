@@ -1,0 +1,11 @@
+﻿@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? Actions { get; set; }
+}
+
+<header class="navbar navbar-dark bg-black border-bottom border-secondary px-3">
+    <span class="navbar-brand mb-0 h5">@Title</span>
+    <div class="ms-auto d-flex align-items-center">
+        @Actions
+    </div>
+</header>

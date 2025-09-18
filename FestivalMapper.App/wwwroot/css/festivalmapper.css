@@ -1,0 +1,13 @@
+﻿/* Custom FestivalMapper Styling */
+:root {
+    --bs-body-bg: #000000;      /* Black */
+    --bs-body-color: #ffffff;   /* White */
+
+    --bs-primary: #FF1493;      /* Neon pink */
+    --bs-secondary: #1E90FF;    /* Electric blue */
+    --bs-success: #39FF14;      /* Laser green */
+    --bs-warning: #FFD700;      /* Festival yellow */
+    --bs-info: #FF00FF;         /* Neon magenta */
+    --bs-light: #C0C0C0;        /* Secondary text */
+    --bs-dark: #101010;         /* Card backgrounds */
+}

@@ -107,4 +107,11 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Components\Home\" />
+      <Folder Include="Components\Festival\" />
+      <Folder Include="Components\Lineup\" />
+      <Folder Include="Components\Shared\" />
+    </ItemGroup>
+
 </Project>

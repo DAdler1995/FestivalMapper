@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+
+<div class="d-flex flex-column vh-100 bg-black text-light">
+    <!-- Top app bar -->
+    <TopAppBar Title="Festival Mapper" />
+
+    <!-- Main content outlet -->
+    <main class="flex-fill overflow-auto">
+        @Body
+    </main>
+
+    <!-- Bottom TabBar (mobile) -->
+    <footer class="d-block d-md-none">
+        <TabBar />
+    </footer>
+
+    <!-- Left NavRail (desktop/tablet) -->
+    <aside class="d-none d-md-flex flex-column">
+        <NavRail />
+    </aside>
+</div>
