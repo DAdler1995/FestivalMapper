@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using FestivalMapper.App.Components.Festival
 @using FestivalMapper.App.Components.Home
 @using FestivalMapper.App.Components.Layout
 
@@ -11,75 +12,34 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col">
-        <h3 class="text-primary text-uppercase display-3">Upcomming Festivals</h3>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col">
-        <ul class="list-group list-group-flush">
-            @for (int i = 0; i < 7; i++)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-start gradient gradient-primary my-1 rounded-2" role="button">
-                    <div class="ms-2 me-auto">
-                        <div class="fw-bold">
-                            Festival @i
-                        </div>
-                    </div>                
-                    <i class="bi bi-share"></i>
-                </li>
-            }
-        </ul>
-    </div>
-</div>
 
-<div class="row mt-5">
-    <div class="col">
-        <h3 class="text-secondary text-uppercase display-3">Past Festivals</h3>
-    </div>
-</div>
+<PageSection Title="Upcoming Festivals">
+    <FestivalList Festivals="@Upcoming" OnShare="ShareFestival" />
+</PageSection>
 
-<div class="row">
-    <div class="col">
-        <ul class="list-group list-group-flush">
-            @for (int i = 0; i < 8; i++)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-start gradient gradient-secondary my-1 rounded-2" style="opacity: 0.85;" role="button">
-                    <div class="ms-2 me-auto">
-                        <div class="fw-bold">
-                            Festival @i
-                        </div>
-                    </div>                
-                    <i class="bi bi-share"></i>
-                </li>
-            }
-        </ul>
-    </div>
-</div>
+<PageSection Title="Past Festivals" TitleStyle="text-secondary">
+    <FestivalList Festivals="@Past" OnShare="ShareFestival" />
+</PageSection>
 
 
 @code {
-  [Inject] NavigationManager Nav { get; set; } = default!;
+    List<FestivalList.FestivalVm> Upcoming = new()
+    {
+        new(1, "EDC", new DateTime(2025, 10, 10), new DateTime(2025, 10, 12), "Las Vegas", "NV"),
+        new(2, "Nocturnal Wonderland", new DateTime(2025, 9, 13), new DateTime(2025, 9, 14), "San Bernardino", "CA"),
+    };
 
-  Task HandleFindFestival()
-  {
-      Nav.NavigateTo("/search");
-      return Task.CompletedTask;
-  }
+    List<FestivalList.FestivalVm> Past = new()
+    {
+        new(1, "EDC", new DateTime(2025, 10, 10), new DateTime(2025, 10, 12), "Las Vegas", "NV"),
+        new(2, "Nocturnal Wonderland", new DateTime(2025, 9, 13), new DateTime(2025, 9, 14), "San Bernardino", "CA"),
+    };
 
-  Task HandleScanQr()
-  {
-      // TODO: open QR flow / permission prompt
-      // e.g., show a dialog component or navigate to /scan
-      Nav.NavigateTo("/scan");
-      return Task.CompletedTask;
-  }
 
-  Task HandleOpenSchedule()
-  {
-      Nav.NavigateTo("/schedule");
-      return Task.CompletedTask;
-  }
+    Task ShareFestival(FestivalList.FestivalVm festival)
+    {
+        // TODO: open share dialog / copy link
+        return Task.CompletedTask;
+    }
 }

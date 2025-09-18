@@ -109,7 +109,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Components\Festival\" />
       <Folder Include="Components\Lineup\" />
       <Folder Include="Components\Shared\" />
     </ItemGroup>

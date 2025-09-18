@@ -1,0 +1,33 @@
+﻿@using System.Globalization
+@code {
+    public record FestivalVm(int Id, string Name, DateTime Start, DateTime End, string? City = null, string? State = null);
+
+    [Parameter] public IEnumerable<FestivalVm> Festivals { get; set; } = Enumerable.Empty<FestivalVm>();
+    [Parameter] public EventCallback<FestivalVm> OnShare { get; set; }
+
+    string DateRange(FestivalVm festival) => $"{festival.Start:MMM d} - {festival.End:MMM d} {(festival.Start.Year != DateTime.Today.Year ? $" {festival.Start:yyyy}" : "")}";
+}
+
+<ul class="list-group list-group-flush">
+    @foreach (var festival in Festivals)
+    {
+        <li class="list-group-item gradient gradient-primary my-1 rounded-2">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+                <div class="flex-grow-1">
+                    <a class="stretched-link text-reset text-decoration-none fw-semibold"
+                        href="@($"/festival/{festival.Id}")">@festival.Name</a>
+                    <div class="small">
+                        @DateRange(festival) @if(!string.IsNullOrWhiteSpace(festival.City)){
+                        <text>• @festival.City, @festival.State</text>
+                                            }
+                    </div>
+                </div>
+
+
+                <button class="btn btn-outline-light" @onclick="() => OnShare.InvokeAsync(festival)">
+                    <i class="bi bi-share" />
+                </button>
+            </div>
+        </li>
+    }
+</ul>
