@@ -4,14 +4,15 @@
 
     [Parameter] public IEnumerable<FestivalVm> Festivals { get; set; } = Enumerable.Empty<FestivalVm>();
     [Parameter] public EventCallback<FestivalVm> OnShare { get; set; }
+    [Parameter] public string Style { get; set; } = "gradient-primary";
 
     string DateRange(FestivalVm festival) => $"{festival.Start:MMM d} - {festival.End:MMM d} {(festival.Start.Year != DateTime.Today.Year ? $" {festival.Start:yyyy}" : "")}";
 }
 
 <ul class="list-group list-group-flush">
-    @foreach (var festival in Festivals)
+    @foreach (var festival in Festivals.OrderBy(f => f.Start))
     {
-        <li class="list-group-item gradient gradient-primary my-1 rounded-2">
+        <li class="list-group-item gradient my-1 rounded-2 @Style">
             <div class="d-flex align-items-center justify-content-between gap-2">
                 <div class="flex-grow-1">
                     <a class="stretched-link text-reset text-decoration-none fw-semibold"
@@ -23,8 +24,7 @@
                     </div>
                 </div>
 
-
-                <button class="btn btn-outline-light" @onclick="() => OnShare.InvokeAsync(festival)">
+                <button class="btn btn-sm btn-outline-light" @onclick="() => OnShare.InvokeAsync(festival)">
                     <i class="bi bi-share" />
                 </button>
             </div>
