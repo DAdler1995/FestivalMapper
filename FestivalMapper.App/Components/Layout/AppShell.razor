@@ -5,17 +5,18 @@
     <TopAppBar Title="Festival Mapper" />
 
     <!-- Main content outlet -->
-    <main class="flex-fill overflow-auto m-4">
+    <main class="container" style="padding-bottom: 101px;">
         @Body
+
+        <div id="blazor-error-ui">
+            An unhandled error has occurred.
+            <a href="" class="reload">Reload</a>
+            <a class="dismiss">🗙</a>
+        </div>
     </main>
 
     <!-- Bottom TabBar (mobile) -->
-    <footer class="d-block d-md-none">
+    <footer class="fixed-bottom">
         <TabBar />
     </footer>
-
-    <!-- Left NavRail (desktop/tablet) -->
-    <aside class="d-none d-md-flex flex-column">
-        <NavRail />
-    </aside>
 </div>
