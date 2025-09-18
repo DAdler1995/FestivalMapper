@@ -1,109 +1,37 @@
-﻿@using FestivalMapper.App.Services
-@using FestivalMapper.App.Models
-@using FestivalMapper.App.Libraries
+﻿@page "/"
+@using FestivalMapper.App.Components.Home
+@using FestivalMapper.App.Components.Layout
 
-@inject MapStorageService MapStorageService
-@inject NavigationManager NavigationManager
+<h1>
+    Welcome to Festival Mapper!
+</h1>
+<p class="text-light">The #1 app for keeping track and planning your festival experience regardless of internet status.</p>
 
-@page "/"
+<button class="btn btn-primary">
+    Get Started
+</button>
 
-<PageTitle>Home</PageTitle>
- 
-<div class="d-flex flex-row mb-3">
-	<button class="btn btn-primary" @onclick="ImportMapFromFile">📂 Import Map</button>
-	<button class="ms-auto btn btn-primary" @onclick="CreateNewMap">Create New Map</button>
-</div>
-
-@if (SavedMaps.Any())
-{
-    <h6>Saved Maps</h6>
-    <ul class="list-group">
-		<Virtualize Items="SavedMaps" Context="savedMap">
-			<li class="list-group-item d-flex flex-row" style="cursor: pointer;" @onclick="() => LoadSelectedMap(savedMap)">
-				<div class="flex-grow-1 align-self-center">@savedMap.FestivalName</div>
-				<button class="btn btn-sm btn-outline-primary me-3"
-						@onclick:stopPropagation="true"
-						@onclick="() => ShareMap(savedMap)">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-						<path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
-					</svg>
-				</button>
-				<button class="btn btn-sm btn-outline-danger"
-						@onclick:stopPropagation="true"
-						@onclick="() => DeleteMap(savedMap)">
-					🗑️
-				</button>
-			</li>
-		</Virtualize>
-    </ul>
-}
 
 @code {
-	[Inject] private IJSRuntime JS { get; set; }
+  [Inject] NavigationManager Nav { get; set; } = default!;
 
-	private List<FestivalMap> SavedMaps = new();
+  Task HandleFindFestival()
+  {
+      Nav.NavigateTo("/search");
+      return Task.CompletedTask;
+  }
 
+  Task HandleScanQr()
+  {
+      // TODO: open QR flow / permission prompt
+      // e.g., show a dialog component or navigate to /scan
+      Nav.NavigateTo("/scan");
+      return Task.CompletedTask;
+  }
 
-
-	protected override async Task OnInitializedAsync()
-	{
-		await LoadMaps();
-	}
-
-
-	private void CreateNewMap()
-	{
-		NavigationManager.NavigateTo($"/Map");
-	}
-
-	private void LoadSelectedMap(FestivalMap map)
-	{
-		NavigationManager.NavigateTo($"/Map/{map.Id}");
-	}
-
-	private async Task DeleteMap(FestivalMap map)
-	{
-		var confirm = await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the \"{map.FestivalName}\" festival map?");
-		if (confirm)
-		{
-			await MapStorageService.DeleteMapAsync(map.Id);
-			await LoadMaps();
-		}
-	}
-
-	private async Task ShareMap(FestivalMap map)
-	{
-		await MapStorageService.ShareMap(map.Id);
-	}
-
-	private async Task LoadMaps()
-	{
-		SavedMaps = await MapStorageService.LoadAllMapsAsync();
-	}
-
-	private async Task ImportMapFromFile()
-	{
-		try
-		{
-			var file = await FilePicker.Default.PickAsync(new PickOptions
-			{
-				PickerTitle = "Select Festival Map",
-				FileTypes = FileTypeHelper.FestivalMap
-			});
-
-			if (file != null)
-			{
-				FestivalMap? importedFestivalMap = await MapStorageService.ImportMapAsync(file);
-				if (importedFestivalMap != null)
-				{
-					NavigationManager.NavigateTo($"/Map/{importedFestivalMap.FestivalName}");
-				}
-			}
-		}
-		catch (Exception)
-		{
-
-		}
-	}
-
+  Task HandleOpenSchedule()
+  {
+      Nav.NavigateTo("/schedule");
+      return Task.CompletedTask;
+  }
 }

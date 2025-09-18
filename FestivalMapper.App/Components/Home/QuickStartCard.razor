@@ -1,0 +1,71 @@
+﻿@using Microsoft.AspNetCore.Components
+
+<div class="card quickstart-card text-light bg-black border-secondary">
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-lightning-charge-fill me-2 fs-5" aria-hidden="true"></i>
+            <h6 class="card-title mb-0">@Title</h6>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Subtitle))
+        {
+            <p class="text-muted mb-3">@Subtitle</p>
+        }
+
+        <div class="d-grid gap-2 gap-md-3 quickstart-grid">
+            <button type="button"
+                    class="btn btn-primary btn-lg"
+                    disabled="@Disabled"
+                    @onclick="() => OnFindFestival.InvokeAsync(null)"
+                    title="Browse and add a festival">
+                <i class="bi bi-search me-2" aria-hidden="true"></i>
+                Find a Festival
+            </button>
+
+            @if (ShowScanQr)
+            {
+                <button type="button"
+                        class="btn btn-outline-primary btn-lg"
+                        disabled="@Disabled"
+                        @onclick="() => OnScanQr.InvokeAsync(null)"
+                        title="Scan a festival QR to load data fast">
+                    <i class="bi bi-qr-code-scan me-2" aria-hidden="true"></i>
+                    Scan QR
+                </button>
+            }
+
+            <button type="button"
+                    class="btn btn-secondary btn-lg"
+                    disabled="@Disabled"
+                    @onclick="() => OnOpenSchedule.InvokeAsync(null)"
+                    title="Jump to your saved sets">
+                <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
+                My Schedule
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Card title (defaults to "Quick Start").</summary>
+    [Parameter] public string Title { get; set; } = "Quick Start";
+
+    /// <summary>Optional subtitle under the title.</summary>
+    [Parameter]
+    public string? Subtitle { get; set; } =
+        "Jump in with the most common actions.";
+
+    /// <summary>Hide/show the Scan QR button (e.g., if camera unsupported).</summary>
+    [Parameter] public bool ShowScanQr { get; set; } = true;
+
+    /// <summary>Disable all actions (e.g., while loading/permission checks).</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Fires when the user taps “Find a Festival”.</summary>
+    [Parameter] public EventCallback OnFindFestival { get; set; }
+
+    /// <summary>Fires when the user taps “Scan QR”.</summary>
+    [Parameter] public EventCallback OnScanQr { get; set; }
+
+    /// <summary>Fires when the user taps “My Schedule”.</summary>
+    [Parameter] public EventCallback OnOpenSchedule { get; set; }
+}
