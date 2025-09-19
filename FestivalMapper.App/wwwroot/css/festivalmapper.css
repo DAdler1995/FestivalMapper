@@ -73,10 +73,6 @@ html, body {
         text-decoration: none;
     }
 
-        [data-bs-theme="dark"] a:hover {
-            text-decoration: underline;
-        }
-
     [data-bs-theme="dark"] .text-primary {
         color: var(--bs-primary) !important;
     }
@@ -190,13 +186,13 @@ html, body {
         transition: background-position 0.3s ease, box-shadow 0.3s ease;
     }
 
-        [data-bs-theme="dark"] .btn-gradient:hover {
-            background-position: right center;
-        }
+    [data-bs-theme="dark"] .btn-gradient:hover {
+        background-position: right center;
+    }
 
-        [data-bs-theme="dark"] .btn-gradient:active {
-            background-position: left center;
-        }
+    [data-bs-theme="dark"] .btn-gradient:active {
+        background-position: left center;
+    }
 
     /* Gradients */
     [data-bs-theme="dark"] .gradient-primary {
@@ -364,9 +360,16 @@ html, body {
     --bs-navbar-color: #e8e8e8;
     --bs-nav-link-color: #bfbfbf;
     --bs-nav-link-hover-color: #ffffff;
+    transition: color .2s ease-in-out;
 }
 
+    [data-bs-theme="dark"] .nav-link:hover,
+    [data-bs-theme="dark"] .nav-link.active{
+        color: var(--bs-primary) !important;
+    }
+
 [data-bs-theme="dark"] .nav-pills .nav-link.active {
+    color: var(--bs-primary);
     background-color: #FF1493;
 }
 
@@ -380,7 +383,7 @@ html, body {
     }
 
         [data-bs-theme="dark"] .nav-tabs .nav-link.active {
-            color: #fff;
+            color: var(--bs-primary);
             border-color: #222 #222 #FF1493 #222;
         }
 

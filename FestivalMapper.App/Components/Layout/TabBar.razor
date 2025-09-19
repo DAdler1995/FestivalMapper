@@ -1,22 +1,42 @@
-﻿<nav class="navbar navbar-dark bg-black border-top border-secondary">
+﻿@using Microsoft.AspNetCore.Components.Routing
+
+<nav class="navbar navbar-dark bg-black border-top border-secondary">
     <ul class="nav nav-justified w-100">
         <li class="nav-item">
-            <a class="nav-link text-light" href="/"><i class="bi bi-house"></i><div>Home</div></a>
+            <NavLink class="nav-link text-light" href="/" Match="NavLinkMatch.All">
+                <i class="bi bi-house"></i>
+                <div>Home</div>
+            </NavLink>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-light" href="/map"><i class="bi bi-map"></i><div>Map</div></a>
+            <NavLink class="nav-link text-light" href="/map" Match="NavLinkMatch.Prefix">
+                <i class="bi bi-map"></i>
+                <div>Map</div>
+            </NavLink>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-light" href="/lineup"><i class="bi bi-music-note-list"></i><div>Lineup</div></a>
+            <NavLink class="nav-link text-light" href="/lineup" Match="NavLinkMatch.Prefix">
+                <i class="bi bi-music-note-list"></i>
+                <div>Lineup</div>
+            </NavLink>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-light" href="/schedule"><i class="bi bi-calendar-event"></i><div>Schedule</div></a>
+            <NavLink class="nav-link text-light" href="/schedule" Match="NavLinkMatch.Prefix">
+                <i class="bi bi-calendar-event"></i>
+                <div>Schedule</div>
+            </NavLink>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-light" href="/more"><i class="bi bi-three-dots"></i><div>More</div></a>
+            <NavLink class="nav-link text-light" href="/more" Match="NavLinkMatch.Prefix">
+                <i class="bi bi-three-dots"></i>
+                <div>More</div>
+            </NavLink>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-light" href="/ThemeTest"><i class="bi bi-three-dots"></i><div>ThemeTest</div></a>
+            <NavLink class="nav-link text-light" href="/ThemeTest" Match="NavLinkMatch.Prefix">
+                <i class="bi bi-info"></i>
+                <div>Theme Test</div>
+            </NavLink>
         </li>
     </ul>
 </nav>
