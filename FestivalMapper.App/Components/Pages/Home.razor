@@ -2,42 +2,27 @@
 @using FestivalMapper.App.Components.Festival
 @using FestivalMapper.App.Components.Home
 @using FestivalMapper.App.Components.Layout
+@using FestivalMapper.App.Models
 
-<div class="row">
-    <div class="col">
-        <h1>
-            Welcome to <span class="text-primary">Festival Mapper</span>!
-        </h1>
-        <p class="text-muted">The #1 app for keeping track and planning your festival experience regardless of internet connection.</p>
-    </div>
-</div>
-
-
-
-<PageSection Title="Upcoming Festivals">
-    <FestivalList Festivals="@Upcoming" OnShare="ShareFestival" />
+<PageSection>
+    <h1>Welcome to <span class="text-primary">Festival Mapper</span>!</h1>
+    <p class="text-muted">The #1 app for keeping track and planning your festival experience regardless of internet connection.</p>
 </PageSection>
 
-<PageSection Title="Past Festivals" TitleStyle="text-secondary">
-    <FestivalList Festivals="@Past" OnShare="ShareFestival" Style="gradient-secondary" />
-</PageSection>
-
+<FestivalList Festivals="@Festivals" OnShare="ShareFestival" />
 
 @code {
-    List<FestivalList.FestivalVm> Upcoming = new()
+    List<Festival> Festivals = new()
     {
-        new(1, "EDC", new DateTime(2025, 10, 10), new DateTime(2025, 10, 12), "Las Vegas", "NV"),
-        new(2, "Nocturnal Wonderland", new DateTime(2025, 9, 13), new DateTime(2025, 9, 14), "San Bernardino", "CA"),
-    };
-
-    List<FestivalList.FestivalVm> Past = new()
-    {
-        new(1, "EDC", new DateTime(2025, 10, 10), new DateTime(2025, 10, 12), "Las Vegas", "NV"),
-        new(2, "Nocturnal Wonderland", new DateTime(2025, 9, 13), new DateTime(2025, 9, 14), "San Bernardino", "CA"),
+        new(Guid.NewGuid(), "EDC", new DateOnly(2025, 5, 15), new DateOnly(2025, 5, 17), "Las Vegas", "NV", null, "", new List<Stage>()),
+        new(Guid.NewGuid(), "Nocturnal Wonderland", new DateOnly(2025, 9, 13), new DateOnly(2025, 9, 14), "San Bernardino", "CA", null, "", new List<Stage>()),
+        new(Guid.NewGuid(), "Escape Wonderland", new DateOnly(2025, 10, 31), new DateOnly(2025, 11, 1), "San Bernardino", "CA", null, "", new List<Stage>()),
+        new(Guid.NewGuid(), "Wasteland", new DateOnly(2025, 8, 29), new DateOnly(2025, 8, 30), "San Bernardino", "CA", null, "", new List<Stage>()),
+        new(Guid.NewGuid(), "Countdown", new DateOnly(2025, 12, 31), new DateOnly(2026, 1, 1), "Los Angeles", "CA", null, "", new List<Stage>()),
     };
 
 
-    Task ShareFestival(FestivalList.FestivalVm festival)
+    Task ShareFestival(Guid Id)
     {
         // TODO: open share dialog / copy link
         return Task.CompletedTask;

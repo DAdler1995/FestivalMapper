@@ -1,33 +1,88 @@
 ﻿@using System.Globalization
+@using FestivalMapper.App.Libraries
+@using Models
+@using Models.ViewModels
+
 @code {
-    public record FestivalVm(int Id, string Name, DateTime Start, DateTime End, string? City = null, string? State = null);
+    [Parameter] public IEnumerable<Festival> Festivals { get; set; } = Enumerable.Empty<Festival>();
+    [Parameter] public EventCallback<Guid> OnShare { get; set; }
 
-    [Parameter] public IEnumerable<FestivalVm> Festivals { get; set; } = Enumerable.Empty<FestivalVm>();
-    [Parameter] public EventCallback<FestivalVm> OnShare { get; set; }
-    [Parameter] public string Style { get; set; } = "gradient-primary";
+    IEnumerable<FestivalListItem> UpcomingFestivals = Enumerable.Empty<FestivalListItem>();
+    IEnumerable<FestivalListItem> PastFestivals = Enumerable.Empty<FestivalListItem>();
 
-    string DateRange(FestivalVm festival) => $"{festival.Start:MMM d} - {festival.End:MMM d} {(festival.Start.Year != DateTime.Today.Year ? $" {festival.Start:yyyy}" : "")}";
+    protected override void OnParametersSet()
+    {
+        UpcomingFestivals = Festivals.Where(f => f.EndDate >= DateOnly.FromDateTime(DateTime.Today)).OrderBy(f => f.StartDate).Select(FestivalMappers.ToListItemViewModel).ToList();
+        PastFestivals = Festivals.Where(f => f.EndDate < DateOnly.FromDateTime(DateTime.Today)).OrderByDescending(f => f.StartDate).Select(FestivalMappers.ToListItemViewModel).ToList();
+    }
 }
 
-<ul class="list-group list-group-flush">
-    @foreach (var festival in Festivals.OrderBy(f => f.Start))
-    {
-        <li class="list-group-item gradient my-1 rounded-2 @Style">
-            <div class="d-flex align-items-center justify-content-between gap-2">
-                <div class="flex-grow-1">
-                    <a class="stretched-link text-reset text-decoration-none fw-semibold"
-                        href="@($"/festival/{festival.Id}")">@festival.Name</a>
-                    <div class="small">
-                        @DateRange(festival) @if(!string.IsNullOrWhiteSpace(festival.City)){
-                        <text>• @festival.City, @festival.State</text>
-                                            }
-                    </div>
-                </div>
+<PageSection Title="Upcoming Festivals" Class="border-bottom border-secondary">
+    <ul class="list-group list-group-flush">
+        @foreach (var festival in UpcomingFestivals)
+        {
+            <li class="list-group-item gradient my-1 rounded-2 gradient-primary position-static">
+                <div class="d-flex align-items-center justify-content-between gap-2">
 
-                <button class="btn btn-sm btn-outline-light" @onclick="() => OnShare.InvokeAsync(festival)">
-                    <i class="bi bi-share" />
-                </button>
-            </div>
-        </li>
-    }
-</ul>
+                    <!-- Make THIS the positioned ancestor for the stretched link -->
+                    <div class="flex-grow-1 position-relative">
+                        <a class="stretched-link text-reset text-decoration-none fw-semibold"
+                           href="@($"/festival/{festival.Id}")">
+                            @festival.Name
+                        </a>
+                        <div class="small">
+                            @festival.DateRange
+                            @if (!string.IsNullOrWhiteSpace(festival.CityState))
+                            {
+                                <text> • @festival.CityState</text>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Ensure the button is clickable (and above the overlay just in case) -->
+                    <button class="btn btn-sm btn-outline-light position-relative z-3"
+                            @onclick:stopPropagation="true"
+                            @onclick="() => OnShare.InvokeAsync(festival.Id)">
+                        <i class="bi bi-share"></i>
+                    </button>
+
+                </div>
+            </li>
+        }
+    </ul>
+</PageSection>
+
+<PageSection Title="Past Festivals" TitleStyle="text-secondary" Class="border-bottom border-secondary">
+    <ul class="list-group list-group-flush">
+        @foreach (var festival in PastFestivals)
+        {
+            <li class="list-group-item gradient my-1 rounded-2 gradient-secondary position-static">
+                <div class="d-flex align-items-center justify-content-between gap-2">
+
+                    <!-- Make THIS the positioned ancestor for the stretched link -->
+                    <div class="flex-grow-1 position-relative">
+                        <a class="stretched-link text-reset text-decoration-none fw-semibold"
+                           href="@($"/festival/{festival.Id}")">
+                            @festival.Name
+                        </a>
+                        <div class="small">
+                            @festival.DateRange
+                            @if (!string.IsNullOrWhiteSpace(festival.CityState))
+                            {
+                                <text> • @festival.CityState</text>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Ensure the button is clickable (and above the overlay just in case) -->
+                    <button class="btn btn-sm btn-outline-light position-relative z-3"
+                            @onclick:stopPropagation="true"
+                            @onclick="() => OnShare.InvokeAsync(festival.Id)">
+                        <i class="bi bi-share"></i>
+                    </button>
+
+                </div>
+            </li>
+        }
+    </ul>
+</PageSection>

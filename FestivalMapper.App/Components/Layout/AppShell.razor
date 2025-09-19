@@ -1,11 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="d-flex flex-column vh-100 bg-black text-light">
+<div class="d-flex flex-column min-vh-100 bg-black text-light">
     <!-- Top app bar -->
     <TopAppBar Title="Festival Mapper" />
 
     <!-- Main content outlet -->
-    <main class="container" style="padding-bottom: 101px;">
+    <main class="container flex-grow-1">
         @Body
 
         <div id="blazor-error-ui">
@@ -16,7 +16,7 @@
     </main>
 
     <!-- Bottom TabBar (mobile) -->
-    <footer class="fixed-bottom">
+    <footer>
         <TabBar />
     </footer>
 </div>

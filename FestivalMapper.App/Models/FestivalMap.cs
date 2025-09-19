@@ -16,7 +16,7 @@ namespace FestivalMapper.App.Models
 
     }
 
-    public class Stage
+    public class Stage_OLD
     {
         public string Id { get; } = Guid.NewGuid().ToString();
         public string StageName { get; set; }
@@ -30,7 +30,7 @@ namespace FestivalMapper.App.Models
         public List<Artist> Artists { get; set; } = new List<Artist>();
     }
 
-    public class Artist
+    public class Artist_OLD
     {
         public string Id { get; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
