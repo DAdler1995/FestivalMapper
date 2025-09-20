@@ -3,6 +3,7 @@
 @using FestivalMapper.App.Components.Home
 @using FestivalMapper.App.Components.Layout
 @using FestivalMapper.App.Models
+@using FestivalMapper.App.Models.ViewModels
 
 <section class="p-3">
     <div class="d-flex align-items-center mb-2">
@@ -16,13 +17,13 @@
 <FestivalList Festivals="@Festivals" OnShare="ShareFestival" />
 
 @code {
-    List<Festival> Festivals = new()
+    List<FestivalListItem> Festivals = new()
     {
-        new(Guid.NewGuid(), "EDC", new DateOnly(2025, 5, 15), new DateOnly(2025, 5, 17), "Las Vegas", "NV", null, "", new List<Stage>()),
-        new(Guid.NewGuid(), "Nocturnal Wonderland", new DateOnly(2025, 9, 13), new DateOnly(2025, 9, 14), "San Bernardino", "CA", null, "", new List<Stage>()),
-        new(Guid.NewGuid(), "Escape Wonderland", new DateOnly(2025, 10, 31), new DateOnly(2025, 11, 1), "San Bernardino", "CA", null, "", new List<Stage>()),
-        new(Guid.NewGuid(), "Wasteland", new DateOnly(2025, 8, 29), new DateOnly(2025, 8, 30), "San Bernardino", "CA", null, "", new List<Stage>()),
-        new(Guid.NewGuid(), "Countdown", new DateOnly(2025, 12, 31), new DateOnly(2026, 1, 1), "Los Angeles", "CA", null, "", new List<Stage>()),
+        new(Guid.NewGuid(), "EDC", new DateOnly(2025, 5, 15), new DateOnly(2025, 5, 17), "Las Vegas", "NV"),
+        new(Guid.NewGuid(), "Nocturnal Wonderland", new DateOnly(2025, 9, 13), new DateOnly(2025, 9, 14), "San Bernardino", "CA"),
+        new(Guid.NewGuid(), "Escape Wonderland", new DateOnly(2025, 10, 31), new DateOnly(2025, 11, 1), "San Bernardino", "CA"),
+        new(Guid.NewGuid(), "Wasteland", new DateOnly(2025, 8, 29), new DateOnly(2025, 8, 30), "San Bernardino", "CA"),
+        new(Guid.NewGuid(), "Countdown", new DateOnly(2025, 12, 31), new DateOnly(2026, 1, 1), "Los Angeles", "CA")
     };
 
 

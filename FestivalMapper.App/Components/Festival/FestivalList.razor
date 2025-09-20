@@ -4,7 +4,7 @@
 @using Models.ViewModels
 
 @code {
-    [Parameter] public IEnumerable<Festival> Festivals { get; set; } = Enumerable.Empty<Festival>();
+    [Parameter] public IEnumerable<FestivalListItem> Festivals { get; set; } = Enumerable.Empty<FestivalListItem>();
     [Parameter] public EventCallback<Guid> OnShare { get; set; }
 
     IEnumerable<FestivalListItem> UpcomingFestivals = Enumerable.Empty<FestivalListItem>();
@@ -12,14 +12,14 @@
 
     protected override void OnParametersSet()
     {
-        UpcomingFestivals = Festivals.Where(f => f.EndDate >= DateOnly.FromDateTime(DateTime.Today)).OrderBy(f => f.StartDate).Select(FestivalMappers.ToListItemViewModel).ToList();
-        PastFestivals = Festivals.Where(f => f.EndDate < DateOnly.FromDateTime(DateTime.Today)).OrderByDescending(f => f.StartDate).Select(FestivalMappers.ToListItemViewModel).ToList();
+        UpcomingFestivals = Festivals.Where(f => f.EndDate >= DateOnly.FromDateTime(DateTime.Today)).OrderBy(f => f.StartDate).ToList();
+        PastFestivals = Festivals.Where(f => f.EndDate < DateOnly.FromDateTime(DateTime.Today)).OrderByDescending(f => f.StartDate).ToList();
     }
 }
 
 <PageSection Title="Upcoming Festivals" SectionClass="border-bottom border-secondary">
     <Actions>
-        <button class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add New Festival</button>
+        <button class="btn btn-primary shimmer"><i class="bi bi-plus-circle"></i> Add New Festival</button>
     </Actions>
 
     <ChildContent>
@@ -38,9 +38,9 @@
                             </a>
                             <div class="small">
                                 @festival.DateRange
-                                @if (!string.IsNullOrWhiteSpace(festival.CityState))
+                                @if (!string.IsNullOrWhiteSpace(festival.CityStateString))
                                 {
-                                    <text> • @festival.CityState</text>
+                                    <text> • @festival.CityStateString</text>
                                 }
                             </div>
                         </div>
@@ -53,8 +53,7 @@
                         </button>
 
                     </div>
-                </li>
-            }
+                </li>            }
         </ul>
     </ChildContent>
 </PageSection>
@@ -74,9 +73,9 @@
                         </a>
                         <div class="small">
                             @festival.DateRange
-                            @if (!string.IsNullOrWhiteSpace(festival.CityState))
+                            @if (!string.IsNullOrWhiteSpace(festival.CityStateString))
                             {
-                                <text> • @festival.CityState</text>
+                                <text> • @festival.CityStateString</text>
                             }
                         </div>
                     </div>
