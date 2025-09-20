@@ -1,15 +1,27 @@
 ﻿@code {
     [Parameter] public string Title { get; set; } = string.Empty;
-    [Parameter] public string TitleStyle { get; set; } = "text-primary";
-    [Parameter] public string Class { get; set; } = string.Empty;
+
+    [Parameter] public string TitleClass { get; set; } = "text-primary display-3";
+    [Parameter] public string SectionClass { get; set; } = string.Empty;
+
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Actions { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditonalAttributes { get; set; }
+
+    private static string MergeClasses(string required, string? optional)
+        => string.IsNullOrWhiteSpace(optional) ? required : $"{required} {optional}";
 }
 
-<section class="p-3 @Class">
+<section class="@MergeClasses("p-3", SectionClass)" @attributes="AdditonalAttributes">
     <div class="d-flex align-items-center mb-2">
-        <h3 class="text-uppercase display-3 mb-0 flex-grow-1 @TitleStyle">@Title</h3>
-        <div>@Actions</div>
+        <h3 class="@MergeClasses("text-uppercase mb-0 flex-grow-1", TitleClass)">@Title</h3>
+
+        @if(Actions is not null)
+        {
+            <div>@Actions</div>
+        }
     </div>
     <div>
         @ChildContent
