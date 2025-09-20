@@ -1,7 +1,7 @@
 ﻿<Router AppAssembly="@typeof(MauiProgram).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.AppShell)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        @* <FocusOnNavigate RouteData="@routeData" Selector="main" /> *@
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(Layout.AppShell)">
