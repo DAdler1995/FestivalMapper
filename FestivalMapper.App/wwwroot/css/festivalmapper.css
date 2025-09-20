@@ -219,56 +219,6 @@ html, body {
         background-image: var(--bs-gradient-danger);
     }
 
-    /* ================================
-   Button Shimmer (high-visibility)
-   Usage: class="btn ... btn-shimmer"
-   ================================ */
-    [data-bs-theme="dark"] .btn-shimmer {
-        position: relative;
-        overflow: hidden;
-        isolation: isolate;
-    }
-
-        [data-bs-theme="dark"] .btn-shimmer::after {
-            content: "";
-            position: absolute;
-            top: -150%;
-            left: -150%;
-            width: 300%;
-            height: 300%;
-            border-radius: inherit;
-            pointer-events: none;
-            /* bright diagonal bar */
-            background: linear-gradient( 45deg, transparent 0%, rgba(255,255,255,0.10) 30%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.10) 60%, transparent 100% );
-            /* rotate the entire band so edges match */
-            transform: rotate(25deg) translateX(-100%);
-            animation: fmBtnShimmer 5s linear infinite;
-            filter: saturate(120%);
-            z-index: 0;
-        }
-
-        [data-bs-theme="dark"] .btn-shimmer > * {
-            position: relative;
-            z-index: 1;
-        }
-
-@keyframes fmBtnShimmer {
-    0% {
-        transform: rotate(25deg) translateX(-100%);
-    }
-
-    100% {
-        transform: rotate(25deg) translateX(100%);
-    }
-}
-
-/* Optional: extra glow when hovered */
-[data-bs-theme="dark"] .btn-gradient.btn-shimmer:hover {
-    box-shadow: 0 0 20px rgba(255,20,147,.6), 0 0 40px rgba(30,144,255,.6);
-}
-
-
-
 /* ---------------------------------
    Alerts
    --------------------------------- */
@@ -560,3 +510,80 @@ html, body {
     outline: 0;
     box-shadow: 0 0 0 .25rem rgba(255,20,147,.25);
 }
+
+
+/* ===== Generic Shimmer Utilities ===== */
+
+/* Customize once, reuse everywhere */
+:root {
+    --shimmer-base: rgba(255,255,255,0.08); /* base tint on dark UI */
+    --shimmer-highlight: rgba(255,255,255,0.28);
+    --shimmer-angle: 45deg;
+    --shimmer-width: 60%; /* width of the bright band */
+    --shimmer-duration: 2000ms;
+    --shimmer-bleed: 50px; /* expand beyond edges to avoid gaps */
+}
+
+/* If you're using Bootstrap themes, optional dark/light tuning */
+[data-bs-theme="light"] {
+    --shimmer-base: rgba(0,0,0,0.06);
+    --shimmer-highlight: rgba(0,0,0,0.16);
+}
+
+/* Core shimmer: works on any element */
+.shimmer {
+    position: relative;
+    overflow: hidden; /* clip the moving light */
+    isolation: isolate; /* keep pseudo-element blending local */
+}
+
+    /* The animated “light sweep” */
+    .shimmer::after {
+        content: "";
+        position: absolute;
+        background-image: linear-gradient( var(--shimmer-angle), rgba(255,255,255,0.00) 0%, rgba(255,255,255,0.04) 25%, var(--shimmer-base) 38%, var(--shimmer-highlight) 50%, var(--shimmer-base) 62%, rgba(255,255,255,0.04) 75%, rgba(255,255,255,0.00) 100% );
+        background-position-x: 100% animation: shimmer 1s infinite linear;
+        inset: calc(var(--shimmer-bleed) * -1);
+        background-repeat: no-repeat;
+        background-position: 50% 50%; /* (safe even when not scaling) */
+        animation: shimmer-sweep var(--shimmer-duration) ease-in-out infinite;
+        pointer-events: none; /* don’t block clicks */
+        mix-blend-mode: plus-lighter; /* softer on top of content */
+        border-radius: inherit; /* respects parent rounding */
+    }
+
+@keyframes shimmer-sweep {
+    from {
+        transform: translateX(-150%);
+    }
+
+    to {
+        transform: translateX(150%);
+    }
+}
+
+/* Handy variants */
+.shimmer.slow {
+    --shimmer-duration: 3000ms;
+}
+
+.shimmer.fast {
+    --shimmer-duration: 1000ms;
+}
+
+.shimmer.paused,
+.shimmer.paused::after,
+.shimmer-text.paused {
+    animation-play-state: paused;
+}
+
+/* Optional: a simple skeleton block */
+.skeleton {
+    background: var(--shimmer-base);
+    border-radius: 0.5rem;
+}
+
+    .skeleton.shimmer {
+        min-height: 1rem;
+    }
+/* size as needed */

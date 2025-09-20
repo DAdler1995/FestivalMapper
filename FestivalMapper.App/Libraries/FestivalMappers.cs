@@ -7,11 +7,7 @@ namespace FestivalMapper.App.Libraries
     {
         public static FestivalListItem ToListItemViewModel(Festival f)
         {
-            var sameYearAsToday = f.StartDate.Year == DateOnly.FromDateTime(DateTime.Today).Year;
-            var dateRange = $"{f.StartDate:MMM d} - {f.EndDate:MMM d}{(sameYearAsToday ? "" : $" {f.StartDate:yyyy}")}";
-            var cityState = string.IsNullOrWhiteSpace(f.City) ? null : $"{f.City}, {f.State}";
-
-            return new FestivalListItem(f.Id, f.Name, dateRange, cityState);
+            return new FestivalListItem(f.Id, f.Name, f.StartDate, f.EndDate, f.City, f.State);
         }
     }
 }
