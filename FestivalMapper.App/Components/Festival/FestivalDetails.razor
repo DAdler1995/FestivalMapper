@@ -1,0 +1,63 @@
+﻿@page "/festival/{Id:guid}"
+
+@using FestivalMapper.App.Interfaces
+@using FestivalMapper.App.Models
+
+@if (_festival is null)
+{
+    <p class="text-muted">Festival not found.</p>
+}
+else
+{
+    <PageSection Title="@_festival.Name">
+        <Actions>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-success"><i class="bi bi-save"></i> Save</button>
+                <button type="button" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+            </div>
+        </Actions>
+
+        <ChildContent>
+            <p class="text-muted">
+                @_festival.StartDate:MMM d - @_festival.EndDate:MMM d
+                @if (!string.IsNullOrWhiteSpace(_festival.City))
+                {
+                    <text>• @_festival.City, @_festival.State</text>
+                }
+            </p>
+        </ChildContent>
+    </PageSection>
+}
+
+@code {
+    // inject
+    [Inject] private IFestivalService FestivalService { get; set; } = default!;
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+
+    // parameters
+    [Parameter] public Guid Id { get; set; }
+
+    // variables
+    private Festival? _festival;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _festival = await FestivalService.GetFestivalAsync(Id);
+    }
+
+    private async Task Save()
+    {
+        if (_festival is null)
+        {
+            return;
+        }
+
+        await FestivalService.SaveFestivalAsync(_festival);
+    }
+
+    private async Task Delete()
+    {
+        await FestivalService.DeleteFestivalAsync(Id);
+        NavManager.NavigateTo("/");
+    }
+}
