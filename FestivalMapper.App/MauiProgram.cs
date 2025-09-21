@@ -1,4 +1,6 @@
-﻿using FestivalMapper.App.Services;
+﻿using FestivalMapper.App.Infrastructure;
+using FestivalMapper.App.Interfaces;
+using FestivalMapper.App.Services;
 using Microsoft.Extensions.Logging;
 
 namespace FestivalMapper.App
@@ -16,6 +18,15 @@ namespace FestivalMapper.App
                 });
 
             builder.Services.AddMauiBlazorWebView();
+
+            // resolve a stable app data folder
+            var root = FileSystem.AppDataDirectory;
+            var repoPath = Path.Combine(root, "festivals");
+            var repo = new JsonFestivalRepositroy(repoPath);
+
+            // dependency injection registrations
+            builder.Services.AddSingleton<IFestivalRepository>(_ => repo);
+            builder.Services.AddScoped<IFestivalService, FestivalService>();
 
             // my services
             builder.Services.AddSingleton<ImagePickerService>();

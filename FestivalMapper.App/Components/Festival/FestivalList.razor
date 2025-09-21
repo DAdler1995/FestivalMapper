@@ -4,17 +4,9 @@
 @using Models.ViewModels
 
 @code {
-    [Parameter] public IEnumerable<FestivalListItem> Festivals { get; set; } = Enumerable.Empty<FestivalListItem>();
+    [Parameter] public IEnumerable<FestivalListItem> UpcomingFestivals { get; set; } = Enumerable.Empty<FestivalListItem>();
+    [Parameter] public IEnumerable<FestivalListItem> PastFestivals { get; set; } = Enumerable.Empty<FestivalListItem>();
     [Parameter] public EventCallback<Guid> OnShare { get; set; }
-
-    IEnumerable<FestivalListItem> UpcomingFestivals = Enumerable.Empty<FestivalListItem>();
-    IEnumerable<FestivalListItem> PastFestivals = Enumerable.Empty<FestivalListItem>();
-
-    protected override void OnParametersSet()
-    {
-        UpcomingFestivals = Festivals.Where(f => f.EndDate >= DateOnly.FromDateTime(DateTime.Today)).OrderBy(f => f.StartDate).ToList();
-        PastFestivals = Festivals.Where(f => f.EndDate < DateOnly.FromDateTime(DateTime.Today)).OrderByDescending(f => f.StartDate).ToList();
-    }
 }
 
 <PageSection Title="Upcoming Festivals" SectionClass="border-bottom border-secondary">
@@ -24,71 +16,89 @@
 
     <ChildContent>
 
-        <ul class="list-group list-group-flush">
-            @foreach (var festival in UpcomingFestivals)
-            {
-                <li class="list-group-item gradient my-1 rounded-2 gradient-primary position-static">
-                    <div class="d-flex align-items-center justify-content-between gap-2">
+        @if (!UpcomingFestivals.Any())
+        {
+            <p class="text-muted">No Festivals Found...</p>
+        }
+        else
+        {
+            <ul class="list-group list-group-flush">
+                @foreach (var festival in UpcomingFestivals)
+                {
+                    <li class="list-group-item gradient my-1 rounded-2 gradient-primary position-static">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
 
-                        <!-- Make THIS the positioned ancestor for the stretched link -->
-                        <div class="flex-grow-1 position-relative">
-                            <a class="stretched-link text-reset text-decoration-none fw-semibold"
-                               href="@($"/festival/{festival.Id}")">
-                                @festival.Name
-                            </a>
-                            <div class="small">
-                                @festival.DateRange
-                                @if (!string.IsNullOrWhiteSpace(festival.CityStateString))
-                                {
-                                    <text> • @festival.CityStateString</text>
-                                }
+                            <!-- Make THIS the positioned ancestor for the stretched link -->
+                            <div class="flex-grow-1 position-relative">
+                                <a class="stretched-link text-reset text-decoration-none fw-semibold"
+                                   href="@($"/festival/{festival.Id}")">
+                                    @festival.Name
+                                </a>
+                                <div class="small">
+                                    @festival.DateRange
+                                    @if (!string.IsNullOrWhiteSpace(festival.CityStateString))
+                                    {
+                                        <text> • @festival.CityStateString</text>
+                                    }
+                                </div>
                             </div>
+
+                            <!-- Ensure the button is clickable (and above the overlay just in case) -->
+                            <button class="btn btn-sm btn-outline-light position-relative z-3"
+                                    @onclick:stopPropagation="true"
+                                    @onclick="() => OnShare.InvokeAsync(festival.Id)">
+                                <i class="bi bi-share"></i>
+                            </button>
+
                         </div>
-
-                        <!-- Ensure the button is clickable (and above the overlay just in case) -->
-                        <button class="btn btn-sm btn-outline-light position-relative z-3"
-                                @onclick:stopPropagation="true"
-                                @onclick="() => OnShare.InvokeAsync(festival.Id)">
-                            <i class="bi bi-share"></i>
-                        </button>
-
-                    </div>
-                </li>            }
-        </ul>
+                    </li>
+                }
+            </ul>
+        }
     </ChildContent>
 </PageSection>
 
 <PageSection Title="Past Festivals" TitleClass="text-secondary display-3" SectionClass="border-bottom border-secondary">
-    <ul class="list-group list-group-flush">
-        @foreach (var festival in PastFestivals)
+
+    <ChildContent>
+        @if (!PastFestivals.Any())
         {
-            <li class="list-group-item gradient my-1 rounded-2 gradient-secondary position-static">
-                <div class="d-flex align-items-center justify-content-between gap-2">
-
-                    <!-- Make THIS the positioned ancestor for the stretched link -->
-                    <div class="flex-grow-1 position-relative">
-                        <a class="stretched-link text-reset text-decoration-none fw-semibold"
-                           href="@($"/festival/{festival.Id}")">
-                            @festival.Name
-                        </a>
-                        <div class="small">
-                            @festival.DateRange
-                            @if (!string.IsNullOrWhiteSpace(festival.CityStateString))
-                            {
-                                <text> • @festival.CityStateString</text>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- Ensure the button is clickable (and above the overlay just in case) -->
-                    <button class="btn btn-sm btn-outline-light position-relative z-3"
-                            @onclick:stopPropagation="true"
-                            @onclick="() => OnShare.InvokeAsync(festival.Id)">
-                        <i class="bi bi-share"></i>
-                    </button>
-
-                </div>
-            </li>
+            <p class="text-muted">No Festivals Found...</p>
         }
-    </ul>
+        else
+        {
+            <ul class="list-group list-group-flush">
+                @foreach (var festival in PastFestivals)
+                {
+                    <li class="list-group-item gradient my-1 rounded-2 gradient-secondary position-static">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+
+                            <!-- Make THIS the positioned ancestor for the stretched link -->
+                            <div class="flex-grow-1 position-relative">
+                                <a class="stretched-link text-reset text-decoration-none fw-semibold"
+                                   href="@($"/festival/{festival.Id}")">
+                                    @festival.Name
+                                </a>
+                                <div class="small">
+                                    @festival.DateRange
+                                    @if (!string.IsNullOrWhiteSpace(festival.CityStateString))
+                                    {
+                                        <text> • @festival.CityStateString</text>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Ensure the button is clickable (and above the overlay just in case) -->
+                            <button class="btn btn-sm btn-outline-light position-relative z-3"
+                                    @onclick:stopPropagation="true"
+                                    @onclick="() => OnShare.InvokeAsync(festival.Id)">
+                                <i class="bi bi-share"></i>
+                            </button>
+
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </ChildContent>
 </PageSection>

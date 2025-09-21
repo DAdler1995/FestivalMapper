@@ -1,9 +1,12 @@
 ﻿@page "/"
+
 @using FestivalMapper.App.Components.Festival
 @using FestivalMapper.App.Components.Home
 @using FestivalMapper.App.Components.Layout
+@using FestivalMapper.App.Interfaces
 @using FestivalMapper.App.Models
 @using FestivalMapper.App.Models.ViewModels
+@using FestivalMapper.App.Services
 
 <section class="p-3">
     <div class="d-flex align-items-center mb-2">
@@ -14,9 +17,37 @@
     </div>
 </section>
 
-<FestivalList Festivals="@Festivals" OnShare="ShareFestival" />
+@if (_loading)
+{
+    <div class="spinner-grow" role="status"><span class="text-primary">Loading…</span></div>
+}
+else
+{
+    <FestivalList UpcomingFestivals="_upcoming" PastFestivals="_past" OnShare="ShareFestival" />
+}
 
 @code {
+
+    // inject
+    [Inject] private IFestivalService FestivalService { get; set; } = default;
+
+    // variables
+    private bool _loading = true;
+    private IReadOnlyList<FestivalListItem> _upcoming = [];
+    private IReadOnlyList<FestivalListItem> _past = [];
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var (upcoming, past) = await FestivalService.GetFestivalListsAsync();
+        _upcoming = upcoming;
+        _past = past;
+
+        _loading = false;
+    }
+
+
     List<FestivalListItem> Festivals = new()
     {
         new(Guid.NewGuid(), "EDC", new DateOnly(2025, 5, 15), new DateOnly(2025, 5, 17), "Las Vegas", "NV"),

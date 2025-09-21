@@ -1,12 +1,5 @@
 ﻿using FestivalMapper.App.Models;
-using Microsoft.Maui.Layouts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using static Microsoft.Maui.ApplicationModel.Permissions;
 
 namespace FestivalMapper.App.Services
 {
