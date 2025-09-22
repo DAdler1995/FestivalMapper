@@ -11,16 +11,16 @@
                 <i class="bi bi-floppy"></i> Save
             </button>
 
+            <button type="button" class="btn btn-outline-warning" @onclick="Cancel">
+                <i class="bi bi-x"></i> Cancel
+            </button>
+
             @if (!IsNew)
             {
                 <button type="button" class="btn btn-outline-danger" @onclick="DeleteAsync">
                     <i class="bi bi-trash"></i> Delete
                 </button>
             }
-
-            <button type="button" class="btn btn-outline-warning" @onclick="@(() => NavManager.NavigateTo("/"))">
-                <i class="bi bi-x"></i> Cancel
-            </button>
         </div>
     </Actions>
 
@@ -60,6 +60,36 @@
                         <label class="form-label">State</label>
                         <InputText class="form-control" @bind-Value="_form.State" />
                     </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label d-block">Festival Map (image)</label>
+
+                    <div class="d-flex flex-column gap-2">
+                        <InputFile OnChange="OnMapSelected" accept="iamge/*" />
+
+                        @if (!string.IsNullOrEmpty(_form.MapImageBase64) && !string.IsNullOrEmpty(_form.MapImageContentType))
+                        {
+                            <div class="border rounded p-2">
+                                <img src="@BuildDataUrl(_form.MapImageContentType, _form.MapImageBase64)" alt="Map preview" class="img-fluid rounded" />
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-danger btn-sm" @onclick="RemoveMap">
+                                    <i class="bi bi-x-circle"></i> Remove
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-muted small">No map selected.</div>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(_mapError))
+                    {
+                        <div class="text-danger small mt-1">@_mapError</div>
+                    }
                 </div>
             </EditForm>
         }

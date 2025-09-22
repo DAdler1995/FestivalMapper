@@ -12,8 +12,9 @@ else
     <PageSection Title="@_festival.Name">
         <Actions>
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-success"><i class="bi bi-save"></i> Save</button>
-                <button type="button" class="btn btn-danger"><i class="bi bi-trash"></i> Delete</button>
+                <button type="button" class="btn btn-outline-success"><i class="bi bi-floppy"></i> Save</button>
+                <button type="button" class="btn btn-outline-warning" @onclick="EditFestival"><i class="bi bi-pencil"></i> Edit</button>
+                <button type="button" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
             </div>
         </Actions>
 
@@ -60,4 +61,10 @@ else
         await FestivalService.DeleteFestivalAsync(Id);
         NavManager.NavigateTo("/");
     }
+
+    private void EditFestival()
+    {
+        NavManager.NavigateTo($"/festival/{Id}/edit");
+    }
+
 }

@@ -21,6 +21,8 @@ namespace FestivalMapper.App.Models.ViewModels
         public DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
         public string? City { get; set; }
         public string? State { get; set; }
+        public string? MapImageBase64 { get; set; }
+        public string? MapImageContentType { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

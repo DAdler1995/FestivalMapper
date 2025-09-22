@@ -15,7 +15,7 @@ namespace FestivalMapper.App.Models
     )
     {
         public static FestivalDocument New(FestivalModel festival) =>
-            new("1.0.0", festival);
+            new("2.0.0", festival);
     }
 
     /// <summary>
@@ -28,15 +28,17 @@ namespace FestivalMapper.App.Models
         DateOnly EndDate,
         string? City,
         string? State,
-        string? TimeZoneId,          // e.g. "America/Los_Angeles" (optional but recommended)
-        string MapImageBase64,       // Base64 PNG/JPG of the festival map
+        string? TimeZoneId,          // e.g. "America/Los_Angeles"
+        string? MapImageBase64,       // Base64 PNG/JPG of the festival map
+        string? MapImageContentType,
         List<Stage> Stages)
     {
         public static FestivalModel New(
             string name,
             DateOnly start,
             DateOnly end,
-            string mapImageBase64,
+            string? mapImageBase64 = null,
+            string? MapImageContentType = null,
             string? city = null,
             string? state = null,
             string? timeZoneId = null,
@@ -50,6 +52,7 @@ namespace FestivalMapper.App.Models
                 State: state?.Trim(),
                 TimeZoneId: timeZoneId,
                 MapImageBase64: mapImageBase64,
+                MapImageContentType: MapImageContentType,
                 Stages: (stages is null ? new List<Stage>() : stages.ToList())
             );
 
