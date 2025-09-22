@@ -11,17 +11,17 @@ namespace FestivalMapper.App.Models
     /// </summary>
     public record class FestivalDocument(
         string SchemaVersion,
-        Festival Festival
+        FestivalModel Festival
     )
     {
-        public static FestivalDocument New(Festival festival) =>
+        public static FestivalDocument New(FestivalModel festival) =>
             new("1.0.0", festival);
     }
 
     /// <summary>
     /// Top-level aggregate.
     /// </summary>
-    public record class Festival(
+    public record class FestivalModel(
         Guid Id,
         string Name,
         DateOnly StartDate,
@@ -32,7 +32,7 @@ namespace FestivalMapper.App.Models
         string MapImageBase64,       // Base64 PNG/JPG of the festival map
         List<Stage> Stages)
     {
-        public static Festival New(
+        public static FestivalModel New(
             string name,
             DateOnly start,
             DateOnly end,

@@ -31,9 +31,9 @@ namespace FestivalMapper.App.Services
             return (upcoming, past);
         }
 
-        public async Task<Festival?> GetFestivalAsync(Guid Id, CancellationToken ct = default) => await _repository.GetByIdASync(Id, ct);
+        public async Task<FestivalModel?> GetFestivalAsync(Guid Id, CancellationToken ct = default) => await _repository.GetByIdASync(Id, ct);
 
-        public async Task SaveFestivalAsync(Festival festival, CancellationToken ct = default)
+        public async Task SaveFestivalAsync(FestivalModel festival, CancellationToken ct = default)
         {
             if (festival.StartDate > festival.EndDate)
             {

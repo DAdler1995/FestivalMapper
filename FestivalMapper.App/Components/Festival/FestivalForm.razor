@@ -1,0 +1,68 @@
+﻿@page "/festival/{Id:guid}/edit"
+@page "/festival/create"
+
+<PageTitle>@(IsNew ? "Create Festival" : "Edit Festival")</PageTitle>
+
+<PageSection Title="@(IsNew ? "Create Festival" : "Edit Festival")">
+
+    <Actions>
+        <div class="btn-group" role="group">
+            <button type="submit" form="festival-form" class="btn btn-outline-success">
+                <i class="bi bi-floppy"></i> Save
+            </button>
+
+            @if (!IsNew)
+            {
+                <button type="button" class="btn btn-outline-danger" @onclick="DeleteAsync">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+            }
+
+            <button type="button" class="btn btn-outline-warning" @onclick="@(() => NavManager.NavigateTo("/"))">
+                <i class="bi bi-x"></i> Cancel
+            </button>
+        </div>
+    </Actions>
+
+    <ChildContent>
+        @if (_form is null)
+        {
+            <p class="text-muted">Loading…</p>
+        }
+        else
+        {
+            <EditForm id="festival-form" Model="_form" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <InputText class="form-control" @bind-Value="_form.Name" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Start Date</label>
+                        <InputDate TValue="DateOnly" class="form-control" @bind-Value="_form.StartDate" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">End Date</label>
+                        <InputDate TValue="DateOnly" class="form-control" @bind-Value="_form.EndDate" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">City</label>
+                        <InputText class="form-control" @bind-Value="_form.City" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">State</label>
+                        <InputText class="form-control" @bind-Value="_form.State" />
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </ChildContent>
+
+</PageSection>

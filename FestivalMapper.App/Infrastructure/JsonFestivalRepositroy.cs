@@ -31,13 +31,13 @@ namespace FestivalMapper.App.Infrastructure
         private string PathFor(Guid Id) => Path.Combine(_root, $"{Id}.festival.json");
 
 
-        public async Task<IReadOnlyList<Festival>> GetAllAsync(CancellationToken ct = default)
+        public async Task<IReadOnlyList<FestivalModel>> GetAllAsync(CancellationToken ct = default)
         {
-            var results = new List<Festival>();
+            var results = new List<FestivalModel>();
             foreach (var file in Directory.EnumerateFiles(_root, "*.festival.json"))
             {
                 await using var stream = File.OpenRead(file);
-                var festival = await JsonSerializer.DeserializeAsync<Festival>(stream, _json, ct);
+                var festival = await JsonSerializer.DeserializeAsync<FestivalModel>(stream, _json, ct);
                 if (festival is not null)
                 {
                     results.Add(festival);
@@ -47,7 +47,7 @@ namespace FestivalMapper.App.Infrastructure
             return results;
         }
 
-        public async Task<Festival?> GetByIdASync(Guid Id, CancellationToken ct = default)
+        public async Task<FestivalModel?> GetByIdASync(Guid Id, CancellationToken ct = default)
         {
             var path = PathFor(Id);
             
@@ -57,10 +57,10 @@ namespace FestivalMapper.App.Infrastructure
             }
 
             await using var stream = File.OpenRead(path);
-            return await JsonSerializer.DeserializeAsync<Festival>(stream, _json, ct);
+            return await JsonSerializer.DeserializeAsync<FestivalModel>(stream, _json, ct);
         }
 
-        public async Task SaveAsync(Festival festival, CancellationToken ct = default)
+        public async Task SaveAsync(FestivalModel festival, CancellationToken ct = default)
         {
             // get the path for the festival - create a new guid if needed
             var path = PathFor(festival.Id == Guid.Empty ? Guid.NewGuid() : festival.Id);

@@ -9,9 +9,9 @@ namespace FestivalMapper.App.Interfaces
 {
     public interface IFestivalRepository
     {
-        Task<IReadOnlyList<Festival>> GetAllAsync(CancellationToken ct = default);
-        Task<Festival?> GetByIdASync(Guid Id, CancellationToken ct = default);
-        Task SaveAsync(Festival festival, CancellationToken ct = default);
+        Task<IReadOnlyList<FestivalModel>> GetAllAsync(CancellationToken ct = default);
+        Task<FestivalModel?> GetByIdASync(Guid Id, CancellationToken ct = default);
+        Task SaveAsync(FestivalModel festival, CancellationToken ct = default);
         Task DeleteAsync(Guid id,  CancellationToken ct = default);
     }
 }

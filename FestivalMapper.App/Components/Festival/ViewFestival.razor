@@ -19,10 +19,10 @@ else
 
         <ChildContent>
             <p class="text-muted">
-                @_festival.StartDate:MMM d - @_festival.EndDate:MMM d
+                @_festival.StartDate.ToString("MMM d yyyy") - @_festival.EndDate.ToString("MMM d yyyy")
                 @if (!string.IsNullOrWhiteSpace(_festival.City))
                 {
-                    <text>• @_festival.City, @_festival.State</text>
+                    <text> • @_festival.City, @_festival.State</text>
                 }
             </p>
         </ChildContent>
@@ -38,7 +38,7 @@ else
     [Parameter] public Guid Id { get; set; }
 
     // variables
-    private Festival? _festival;
+    private FestivalModel? _festival;
 
     protected override async Task OnParametersSetAsync()
     {
