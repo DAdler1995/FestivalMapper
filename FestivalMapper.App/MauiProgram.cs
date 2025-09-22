@@ -27,6 +27,7 @@ namespace FestivalMapper.App
             // dependency injection registrations
             builder.Services.AddSingleton<IFestivalRepository>(_ => repo);
             builder.Services.AddScoped<IFestivalService, FestivalService>();
+            builder.Services.AddScoped<FestivalSelectionState>();
 
             // my services
             builder.Services.AddSingleton<ImagePickerService>();

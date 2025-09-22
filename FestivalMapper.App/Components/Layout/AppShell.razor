@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using FestivalMapper.App.Services
+@inherits LayoutComponentBase
 
 <div class="d-flex flex-column min-vh-100 bg-black text-light">
     <!-- Top app bar -->
@@ -20,3 +21,29 @@
         <TabBar />
     </footer>
 </div>
+
+@code {
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+    [Inject] private FestivalSelectionState SelectionState { get; set; } = default!;
+
+
+    protected override void OnInitialized()
+    {
+        NavManager.LocationChanged += HandleLocationChanged;
+        HandleLocationChanged(this, null!); // run once for initial load
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        var uri = new Uri(NavManager.Uri);
+        if (!uri.AbsolutePath.StartsWith("/festival", StringComparison.OrdinalIgnoreCase))
+        {
+            SelectionState.Clear();
+        }
+
+        StateHasChanged();
+    }
+
+    public void Dispose() => NavManager.LocationChanged -= HandleLocationChanged;
+
+}

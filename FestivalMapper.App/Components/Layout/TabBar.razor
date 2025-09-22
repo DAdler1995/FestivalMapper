@@ -1,4 +1,8 @@
-﻿@using Microsoft.AspNetCore.Components.Routing
+﻿@using FestivalMapper.App.Services
+@using Microsoft.AspNetCore.Components.Routing
+
+@inject FestivalSelectionState SelectionState
+@implements IDisposable
 
 <nav class="navbar navbar-dark bg-black border-top border-secondary">
     <ul class="nav nav-justified w-100">
@@ -8,24 +12,29 @@
                 <div>Home</div>
             </NavLink>
         </li>
-        <li class="nav-item">
-            <NavLink class="nav-link text-light" href="/map" Match="NavLinkMatch.Prefix">
-                <i class="bi bi-map"></i>
-                <div>Map</div>
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link text-light" href="/lineup" Match="NavLinkMatch.Prefix">
-                <i class="bi bi-music-note-list"></i>
-                <div>Lineup</div>
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link text-light" href="/schedule" Match="NavLinkMatch.Prefix">
-                <i class="bi bi-calendar-event"></i>
-                <div>Schedule</div>
-            </NavLink>
-        </li>
+
+        @if (SelectionState.HasSelection)
+        {
+            <li class="nav-item">
+                <NavLink class="nav-link text-light" href="@($"/festival/{SelectionState.SelectedFestivalId}")" Match="NavLinkMatch.All">
+                    <i class="bi bi-music-note-list"></i>
+                    <div>Details</div>
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link text-light" href="/map" Match="NavLinkMatch.Prefix">
+                    <i class="bi bi-map"></i>
+                    <div>Map</div>
+                </NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink class="nav-link text-light" href="/schedule" Match="NavLinkMatch.Prefix">
+                    <i class="bi bi-calendar-event"></i>
+                    <div>Schedule</div>
+                </NavLink>
+            </li>
+        }
+
         <li class="nav-item">
             <NavLink class="nav-link text-light" href="/more" Match="NavLinkMatch.Prefix">
                 <i class="bi bi-three-dots"></i>
@@ -40,3 +49,19 @@
         </li>
     </ul>
 </nav>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Re-render this component whenever the selection changes
+        SelectionState.PropertyChanged += OnSelectionChanged;
+    }
+
+    private void OnSelectionChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        SelectionState.PropertyChanged -= OnSelectionChanged;
+    }
+}
