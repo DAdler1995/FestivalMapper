@@ -4,14 +4,21 @@
 @using Models.ViewModels
 
 @code {
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+
     [Parameter] public IEnumerable<FestivalListItem> UpcomingFestivals { get; set; } = Enumerable.Empty<FestivalListItem>();
     [Parameter] public IEnumerable<FestivalListItem> PastFestivals { get; set; } = Enumerable.Empty<FestivalListItem>();
     [Parameter] public EventCallback<Guid> OnShare { get; set; }
+
+    private void CreateNewFestival()
+    {
+        NavManager.NavigateTo("/festival/new");
+    }
 }
 
 <PageSection Title="Upcoming Festivals" SectionClass="border-bottom border-secondary">
     <Actions>
-        <button class="btn btn-primary shimmer"><i class="bi bi-plus-circle"></i> Add New Festival</button>
+        <button class="btn btn-primary shimmer" @onclick="CreateNewFestival"><i class="bi bi-plus-circle"></i> Add New Festival</button>
     </Actions>
 
     <ChildContent>
