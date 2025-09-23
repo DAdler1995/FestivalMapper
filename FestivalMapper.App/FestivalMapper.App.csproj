@@ -110,7 +110,6 @@
 
     <ItemGroup>
       <Folder Include="Components\Lineup\" />
-      <Folder Include="Components\Shared\" />
     </ItemGroup>
 
 </Project>

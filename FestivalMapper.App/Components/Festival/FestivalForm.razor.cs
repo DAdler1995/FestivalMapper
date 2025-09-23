@@ -1,3 +1,4 @@
+using FestivalMapper.App.Components.Shared;
 using FestivalMapper.App.Interfaces;
 using FestivalMapper.App.Models;
 using FestivalMapper.App.Models.ViewModels;
@@ -16,6 +17,8 @@ namespace FestivalMapper.App.Components.Festival
 
 
         private FestivalFormViewModel? _form;
+        private ConfirmModalBase? _deleteModal;
+
         private bool IsNew => Id is null;
         private static DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
 
@@ -49,7 +52,7 @@ namespace FestivalMapper.App.Components.Festival
                 return;
             }
 
-            _form = MapToViewModl(festival);
+            _form = MapToViewModel(festival);
         }
 
         private async Task SaveAsync()
@@ -67,7 +70,7 @@ namespace FestivalMapper.App.Components.Festival
             var model = MapToDomain(_form);
             await Service.SaveFestivalAsync(model);
 
-            NavManager.NavigateTo("/");
+            NavManager.NavigateTo($"/festival/{_form.Id}");
         }
 
         private void Cancel()
@@ -92,6 +95,9 @@ namespace FestivalMapper.App.Components.Festival
             await Service.DeleteFestivalAsync(Id.Value);
             NavManager.NavigateTo("/");
         }
+        private Task ShowDeleteConfirm() => _deleteModal?.ShowAsync() ?? Task.CompletedTask;
+
+
 
         private async Task OnMapSelected(InputFileChangeEventArgs e)
         {
@@ -135,11 +141,6 @@ namespace FestivalMapper.App.Components.Festival
             _form.MapImageContentType = null;
         }
 
-        private static string BuildDataUrl(string contentType, string base64)
-        {
-            return $"data:{contentType};base64,{base64}";
-        }
-
         private FestivalModel MapToDomain(FestivalFormViewModel form)
         {
             return new FestivalModel(
@@ -155,7 +156,7 @@ namespace FestivalMapper.App.Components.Festival
                 []);
         }
 
-        private FestivalFormViewModel? MapToViewModl(FestivalModel festival)
+        private FestivalFormViewModel? MapToViewModel(FestivalModel festival)
         {
             return new FestivalFormViewModel
             {

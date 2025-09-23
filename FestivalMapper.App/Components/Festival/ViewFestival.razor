@@ -3,33 +3,67 @@
 @using FestivalMapper.App.Interfaces
 @using FestivalMapper.App.Models
 @using FestivalMapper.App.Services
+@using FestivalMapper.App.Libraries
+@using FestivalMapper.App.Components.Shared
 
-@if (_festival is null)
+@if (_loading)
 {
-    <p class="text-muted">Festival not found.</p>
-}
+    <Loading />
+} 
 else
 {
-    <PageSection Title="@_festival.Name">
-        <Actions>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-outline-primary"><i class="bi bi-floppy"></i> Save</button>
-                <button type="button" class="btn btn-outline-secondary" @onclick="EditFestival"><i class="bi bi-pencil"></i> Edit</button>
-                <button type="button" class="btn btn-outline-danger"><i class="bi bi-trash"></i> Delete</button>
-            </div>
-        </Actions>
+    @if (_festival is null)
+    {
+        <p class="text-muted">Festival not found.</p>
+    }
+    else
+    {
+        <PageSection Title="@_festival.Name">
+            <Actions>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="EditFestival"><i class="bi bi-pencil"></i> Edit</button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="ShowDeleteConfirm"><i class="bi bi-trash"></i> Delete</button>
+                </div>
+            </Actions>
 
-        <ChildContent>
-            <p class="text-muted">
-                @_festival.StartDate.ToString("MMM d yyyy") - @_festival.EndDate.ToString("MMM d yyyy")
-                @if (!string.IsNullOrWhiteSpace(_festival.City))
-                {
-                    <text> • @_festival.City, @_festival.State</text>
-                }
-            </p>
-        </ChildContent>
-    </PageSection>
+            <ChildContent>
+                <p class="text-muted">
+                    @_festival.StartDate.ToString("MMM d yyyy") - @_festival.EndDate.ToString("MMM d yyyy")
+                    @if (!string.IsNullOrWhiteSpace(_festival.City))
+                    {
+                        <text> • @_festival.City, @_festival.State</text>
+                    }
+                </p>
+            </ChildContent>
+        </PageSection>
+
+        @if (!string.IsNullOrEmpty(_festival.MapImageBase64) && !string.IsNullOrEmpty(_festival.MapImageContentType))
+        {
+            <PageSection Title="Map" TitleClass="heading-5 text-secondary">
+                <ChildContent>
+                    <div class="d-flex flex-column gap-2">
+                        <div class="border rounded p-2">
+                            <img src="@ImageHelper.BuildDataUrl(_festival.MapImageContentType, _festival.MapImageBase64)" alt="Map preview" class="img-fluid rounded mx-auto d-block" />
+                        </div>
+                    </div>
+                </ChildContent>
+            </PageSection>
+        }
+
+        <ConfirmModal @ref="_deleteModal"
+                      Title="Confirm Delete"
+                      Message="@($"Are you sure you want to delete <strong>{_festival?.Name}</strong>? This action cannot be undone.")"
+                      ConfirmText="Delete"
+                      CancelText="Cancel"
+                      ConfirmButtonClass="btn btn-danger"
+                      CancelButtonClass="btn btn-outline-secondary"
+                      OnConfirm="Delete"
+                      Centered="true"
+                      Dark="true"
+                      StaticBackdrop="true" />
+    }
 }
+
 
 @code {
     // inject
@@ -42,6 +76,8 @@ else
 
     // variables
     private FestivalModel? _festival;
+    private ConfirmModalBase? _deleteModal;
+    private bool _loading = true;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -54,6 +90,7 @@ else
         }
 
         SelectionState.Select(_festival.Id);
+        _loading = false;
     }
 
     private async Task Save()
@@ -71,6 +108,8 @@ else
         await FestivalService.DeleteFestivalAsync(Id);
         NavManager.NavigateTo("/");
     }
+
+    private Task ShowDeleteConfirm() => _deleteModal?.ShowAsync() ?? Task.CompletedTask;
 
     private void EditFestival()
     {

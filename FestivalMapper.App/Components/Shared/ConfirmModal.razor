@@ -1,0 +1,38 @@
+﻿@inherits ConfirmModalBase
+
+<div @ref="_modalEl" class="modal fade" id="@Id" tabindex="-1" aria-labelledby="@($"{Id}_label")" aria-hidden="true">
+    <div class="modal-dialog @(Centered ? "modal-dialog-centered" : "") @SizeClass">
+        <div class="modal-content @(Dark ? "bg-dark text-light" : "")">
+            <div class="modal-header">
+                <h5 class="modal-title" id="@($"{Id}_label")">@Title</h5>
+                <button type="button" class="btn-close @(Dark ? "btn-close-white" : "")" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                @if (Body is not null)
+                {
+                    @Body
+                }
+                else if (!string.IsNullOrWhiteSpace(Message))
+                {
+                    @((MarkupString)Message)
+                }
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="@CancelButtonClass"
+                        @onclick="HandleCancel">
+                    @CancelText
+                </button>
+
+                <button type="button"
+                        class="@ConfirmButtonClass"
+                        @onclick="HandleConfirm"
+                        disabled="@Busy">
+                    @ConfirmText
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

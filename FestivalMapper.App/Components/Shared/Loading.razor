@@ -1,0 +1,10 @@
+﻿@code {
+    [Parameter] public string TextClass { get; set; } = "text-primary";
+}
+
+<div class="d-flex align-items-center my-3">
+    <div class="spinner-grow @TextClass" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <span class="@TextClass mx-2">Loading...</span>
+</div>

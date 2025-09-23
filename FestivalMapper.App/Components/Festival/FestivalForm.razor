@@ -1,6 +1,9 @@
 ﻿@page "/festival/{Id:guid}/edit"
 @page "/festival/create"
 
+@using FestivalMapper.App.Components.Shared
+@using FestivalMapper.App.Libraries
+
 <PageTitle>@(IsNew ? "Create Festival" : "Edit Festival")</PageTitle>
 
 <PageSection Title="@(IsNew ? "Create Festival" : "Edit Festival")">
@@ -17,7 +20,7 @@
 
             @if (!IsNew)
             {
-                <button type="button" class="btn btn-outline-danger" @onclick="DeleteAsync">
+                <button type="button" class="btn btn-outline-danger" @onclick="ShowDeleteConfirm">
                     <i class="bi bi-trash"></i> Delete
                 </button>
             }
@@ -27,7 +30,7 @@
     <ChildContent>
         @if (_form is null)
         {
-            <p class="text-muted">Loading…</p>
+            <Loading />
         }
         else
         {
@@ -65,13 +68,18 @@
                 <div class="mb-2">
                     <label class="form-label d-block">Festival Map (image)</label>
 
+                    @if (!string.IsNullOrEmpty(_mapError))
+                    {
+                        <div class="text-danger small mt-1">@_mapError</div>
+                    }
+
                     <div class="d-flex flex-column gap-2">
-                        <InputFile OnChange="OnMapSelected" accept="iamge/*" />
+                        <InputFile OnChange="OnMapSelected" accept="image/*" />
 
                         @if (!string.IsNullOrEmpty(_form.MapImageBase64) && !string.IsNullOrEmpty(_form.MapImageContentType))
                         {
                             <div class="border rounded p-2">
-                                <img src="@BuildDataUrl(_form.MapImageContentType, _form.MapImageBase64)" alt="Map preview" class="img-fluid rounded" />
+                                <img src="@ImageHelper.BuildDataUrl(_form.MapImageContentType, _form.MapImageBase64)" alt="Map preview" class="img-fluid rounded mx-auto d-block" />
                             </div>
 
                             <div class="d-flex gap-2">
@@ -85,14 +93,23 @@
                             <div class="text-muted small">No map selected.</div>
                         }
                     </div>
-
-                    @if (!string.IsNullOrEmpty(_mapError))
-                    {
-                        <div class="text-danger small mt-1">@_mapError</div>
-                    }
                 </div>
             </EditForm>
         }
     </ChildContent>
 
 </PageSection>
+
+
+
+<ConfirmModal @ref="_deleteModal"
+              Title="Confirm Delete"
+              Message="@($"Are you sure you want to delete <strong>{_form?.Name}</strong>? This action cannot be undone.")"
+              ConfirmText="Delete"
+              CancelText="Cancel"
+              ConfirmButtonClass="btn btn-danger"
+              CancelButtonClass="btn btn-outline-secondary"
+              OnConfirm="DeleteAsync"
+              Centered="true"
+              Dark="true"
+              StaticBackdrop="true" />
